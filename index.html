@@ -3,197 +3,234 @@ coin-display
 Version: 0.1
 Author: lgtaegi
 Update:
-- Electric wave / cyber energy effect around price
+- Random meteor (shooting star) background effect
 -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>coin-display</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<title>coin-display</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Cyborg Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      background: #000;
-      color: #fff;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-    }
+html, body {
+  width:100%;
+  height:100%;
+  background: radial-gradient(circle at center, #02020a, #000);
+  overflow:hidden;
+  color:#fff;
+  font-family:'Orbitron', monospace;
+}
 
-    /* ===== Cyber Background (기존 유지) ===== */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background:
-        linear-gradient(transparent 95%, rgba(0,255,255,0.12)),
-        linear-gradient(90deg, transparent 95%, rgba(0,255,255,0.12));
-      background-size: 60px 60px;
-      animation: gridMove 22s linear infinite;
-      z-index: 0;
-    }
+/* ===== Starfield ===== */
+body::before {
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 80% 40%, #fff, transparent),
+    radial-gradient(1px 1px at 50% 80%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 60%, #fff, transparent),
+    radial-gradient(1px 1px at 30% 70%, #fff, transparent);
+  animation: starDrift 60s linear infinite;
+  opacity:0.5;
+  z-index:0;
+}
 
-    @keyframes gridMove {
-      from { background-position: 0 0, 0 0; }
-      to   { background-position: 300px 300px, 300px 300px; }
-    }
+@keyframes starDrift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(120px); }
+}
 
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+/* ===== Meteor ===== */
+.meteor {
+  position: fixed;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(0,255,255,1));
+  opacity: 0.9;
+  transform-origin: left center;
+  animation: meteorFly 1.2s ease-out forwards;
+  z-index: 1;
+}
 
-    .container {
-      position: relative;
-      text-align: center;
-      z-index: 1;
-    }
+@keyframes meteorFly {
+  from {
+    transform: translate(0,0) rotate(var(--angle)) scaleX(0.2);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--angle)) scaleX(1);
+    opacity: 0;
+  }
+}
 
-    /* ===== Electric Field ===== */
-    .energy-field {
-      position: relative;
-      display: inline-block;
-      padding: 40px 60px;
-    }
+/* ===== Layout ===== */
+body {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
-    .energy-field::before,
-    .energy-field::after {
-      content: "";
-      position: absolute;
-      inset: -25px;
-      border-radius: 50%;
-      border: 2px solid rgba(0,255,255,0.4);
-      filter: blur(6px);
-      animation: pulse 3.5s ease-in-out infinite;
-      pointer-events: none;
-    }
+.container {
+  position:relative;
+  z-index:2;
+  text-align:center;
+}
 
-    .energy-field::after {
-      inset: -40px;
-      border-color: rgba(255,0,255,0.35);
-      animation-duration: 5s;
-    }
+/* ===== Energy Core ===== */
+.energy-field {
+  position:relative;
+  padding:40px 60px;
+}
 
-    @keyframes pulse {
-      0%   { transform: scale(0.96); opacity: 0.5; }
-      50%  { transform: scale(1.04); opacity: 0.9; }
-      100% { transform: scale(0.96); opacity: 0.5; }
-    }
+.energy-field::before {
+  content:"";
+  position:absolute;
+  inset:-30px;
+  border-radius:50%;
+  border:2px solid rgba(0,255,255,0.4);
+  filter:blur(8px);
+  animation:pulse 4s ease-in-out infinite;
+}
 
-    /* ===== Price Display ===== */
-    .main {
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(3rem, 10vw, 8rem);
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      position: relative;
-      z-index: 2;
-      text-shadow:
-        0 0 10px rgba(0,255,255,0.8),
-        0 0 25px rgba(0,255,255,0.4);
-    }
+@keyframes pulse {
+  0%,100% { transform:scale(0.95); opacity:0.5; }
+  50%     { transform:scale(1.05); opacity:0.9; }
+}
 
-    .sub-time {
-      margin-top: 14px;
-      font-size: 0.95rem;
-      opacity: 0.75;
-    }
+.main {
+  font-size:clamp(3rem,10vw,8rem);
+  font-weight:700;
+  text-shadow:0 0 18px rgba(0,255,255,0.9);
+}
 
-    .toggle {
-      margin-top: 18px;
-      font-size: 0.85rem;
-      opacity: 0.6;
-      cursor: pointer;
-      user-select: none;
-    }
+/* ===== Price Ghost ===== */
+.ghost {
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  font-size:clamp(3rem,10vw,8rem);
+  color:rgba(0,255,255,0.6);
+  pointer-events:none;
+  animation:driftAway 6s ease-out forwards;
+}
 
-    .toggle:hover {
-      opacity: 1;
-    }
-  </style>
+@keyframes driftAway {
+  from {
+    transform:translate(-50%,-50%) scale(1);
+    opacity:0.6;
+  }
+  to {
+    transform:translate(-50%,-160%) scale(0.3);
+    opacity:0;
+  }
+}
+
+.sub-time {
+  margin-top:16px;
+  font-size:0.9rem;
+  opacity:0.7;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="container">
-    <div class="energy-field">
-      <div class="main" id="mainDisplay">--</div>
-    </div>
-
-    <div class="sub-time" id="subTime">--</div>
-    <div class="toggle" id="toggle">⏱ ↔ ₿</div>
+<div class="container" id="container">
+  <div class="energy-field">
+    <div class="main" id="price">--</div>
   </div>
+  <div class="sub-time" id="time">--</div>
+</div>
 
-  <script>
-    const mainDisplay = document.getElementById("mainDisplay");
-    const subTime = document.getElementById("subTime");
-    const toggle = document.getElementById("toggle");
+<script>
+const priceEl = document.getElementById("price");
+const container = document.getElementById("container");
+const timeEl = document.getElementById("time");
 
-    const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
-    const TIMEZONE = "America/Denver";
+const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
+const TIMEZONE = "America/Denver";
 
-    let mode = "price";
-    let lastPrice = "--";
+let lastPrice = null;
 
-    function getLocalTime() {
-      return new Intl.DateTimeFormat("en-US", {
-        timeZone: TIMEZONE,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true
-      }).format(new Date());
-    }
+function getTime() {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: TIMEZONE,
+    hour:"2-digit", minute:"2-digit", second:"2-digit",
+    hour12:true
+  }).format(new Date());
+}
 
-    async function fetchPrice() {
-      try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        lastPrice = `$${Math.round(Number(data.data.amount)).toLocaleString()}`;
-        if (mode === "price") {
-          mainDisplay.textContent = lastPrice;
-        }
-      } catch {
-        if (mode === "price") {
-          mainDisplay.textContent = "ERROR";
-        }
-      }
-    }
+function spawnGhost(text) {
+  const ghost = document.createElement("div");
+  ghost.className = "ghost";
+  ghost.textContent = text;
+  container.appendChild(ghost);
+  setTimeout(() => ghost.remove(), 6000);
+}
 
-    function updateTime() {
-      const time = getLocalTime();
-      subTime.textContent = `Salt Lake City · ${time}`;
-      if (mode === "time") {
-        mainDisplay.textContent = time;
-      }
-    }
+/* ===== Meteor Spawn ===== */
+function spawnMeteor() {
+  const meteor = document.createElement("div");
+  meteor.className = "meteor";
 
-    toggle.addEventListener("click", () => {
-      mode = mode === "price" ? "time" : "price";
-      mainDisplay.textContent = mode === "price" ? lastPrice : getLocalTime();
-    });
+  const startX = Math.random() * window.innerWidth;
+  const startY = Math.random() * window.innerHeight * 0.4;
+  const angle = 20 + Math.random() * 40;
+  const dx = 300 + Math.random() * 400;
+  const dy = 200 + Math.random() * 300;
 
-    fetchPrice();
-    updateTime();
+  meteor.style.left = `${startX}px`;
+  meteor.style.top = `${startY}px`;
+  meteor.style.setProperty("--angle", `${angle}deg`);
+  meteor.style.setProperty("--dx", `${dx}px`);
+  meteor.style.setProperty("--dy", `${dy}px`);
 
-    setInterval(fetchPrice, 10000);
-    setInterval(updateTime, 1000);
-  </script>
+  document.body.appendChild(meteor);
+  setTimeout(() => meteor.remove(), 1500);
+
+  scheduleNextMeteor();
+}
+
+function scheduleNextMeteor() {
+  const delay = 5000 + Math.random() * 20000; // 5–25s
+  setTimeout(spawnMeteor, delay);
+}
+
+async function fetchPrice() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    const newPrice = `$${Math.round(Number(data.data.amount)).toLocaleString()}`;
+    if (lastPrice && newPrice !== lastPrice) spawnGhost(lastPrice);
+    lastPrice = newPrice;
+    priceEl.textContent = newPrice;
+  } catch {
+    priceEl.textContent = "ERROR";
+  }
+}
+
+function updateTime() {
+  timeEl.textContent = `Salt Lake City · ${getTime()}`;
+}
+
+fetchPrice();
+updateTime();
+scheduleNextMeteor();
+
+setInterval(fetchPrice, 10000);
+setInterval(updateTime, 1000);
+</script>
 
 </body>
 </html>
