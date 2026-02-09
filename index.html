@@ -1,11 +1,16 @@
 <!--
 Project: BTC Core Display
-Version: 1.17
+Version: 1.21
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Toggle button moved down by 5px from previous position
+- Unified adjustable toggle positioning via CSS variable
+- Wireframe font preserved but rendered as multi-fragment puzzle-like construction
+- Added monitor scanline frequency noise
+- Added frequent glitch noise
+- Added floating electronic particle motion
+- Time mode auto-resizes to stay inside display
 -->
 
 <!DOCTYPE html>
@@ -16,6 +21,12 @@ Updates:
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
+/* ================= EASY ADJUST ================= */
+:root {
+  --toggle-offset-y: 110px; /* 🔧 전환 버튼 위치 여기만 조절 */
+}
+
+/* ================= RESET ================= */
 * { margin:0; padding:0; box-sizing:border-box; }
 
 html, body {
@@ -37,39 +48,26 @@ html, body {
   background:url("machine-bg.png") center/contain no-repeat;
 }
 
-/* ================= TOGGLE (UPPER AREA) ================= */
+/* ================= TOGGLE ================= */
 .toggle {
   position:absolute;
-
-  /* ⬇ moved down by 5px from v1.16 */
   left:50%;
-  top:calc(27% - 90px);
+  top:calc(27% + var(--toggle-offset-y));
   transform:translate(-50%, -50%);
-
   width:38px;
   height:38px;
   border-radius:50%;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   font-size:1.05rem;
   color:white;
-
-  border:1px solid rgba(180,240,255,0.9);
-  background:radial-gradient(
-    circle,
-    rgba(0,255,255,0.35),
-    rgba(0,120,255,0.05)
-  );
-
   cursor:pointer;
   user-select:none;
 
-  box-shadow:
-    0 0 18px rgba(0,255,255,1),
-    inset 0 0 12px rgba(0,255,255,0.7);
+  border:1px solid rgba(180,240,255,0.9);
+  background:radial-gradient(circle, rgba(0,255,255,0.35), rgba(0,120,255,0.05));
+  box-shadow:0 0 18px rgba(0,255,255,1), inset 0 0 12px rgba(0,255,255,0.7);
 }
 
 /* ================= SCREEN ================= */
@@ -80,32 +78,51 @@ html, body {
   transform:translate(-50%, -44%);
   width:70%;
   height:22%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
 }
 
-/* ================= ELECTRIC OVERLAY ================= */
-.electric {
+/* ================= DISPLAY ================= */
+.display {
+  position:relative;
+  width:100%;
+  height:70%;
+  overflow:hidden;
+}
+
+/* ================= MONITOR NOISE ================= */
+.display::before {
+  content:"";
   position:absolute;
   inset:0;
   pointer-events:none;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(0,255,255,0.08) 0px,
-      rgba(0,255,255,0.08) 1px,
-      transparent 1px,
-      transparent 18px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(0,200,255,0.06) 0px,
-      rgba(0,200,255,0.06) 1px,
-      transparent 1px,
-      transparent 26px
-    );
-  opacity:0.18;
+  background:repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.05) 0px,
+    rgba(255,255,255,0.05) 1px,
+    transparent 3px,
+    transparent 7px
+  );
+  opacity:0.35;
+  animation:scanline 6s linear infinite;
+}
+
+.display::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:rgba(255,255,255,0.03);
+  animation:flicker 0.14s infinite;
+}
+
+@keyframes scanline {
+  from { transform:translateY(-20%); }
+  to   { transform:translateY(20%); }
+}
+
+@keyframes flicker {
+  0% { opacity:0.02; }
+  50% { opacity:0.05; }
+  100% { opacity:0.02; }
 }
 
 /* ================= PARTICLES ================= */
@@ -113,7 +130,6 @@ html, body {
   position:absolute;
   inset:0;
   pointer-events:none;
-  overflow:hidden;
 }
 
 .particle {
@@ -123,60 +139,73 @@ html, body {
   border-radius:50%;
   background:rgba(255,255,255,0.9);
   box-shadow:0 0 6px rgba(255,255,255,0.9);
-  opacity:0.7;
-  animation: floatSoft linear infinite;
+  opacity:0.6;
+  animation:float 8s linear infinite;
 }
 
-@keyframes floatSoft {
-  from { transform:translate(0,0); opacity:0.3; }
-  to   { transform:translate(var(--dx), var(--dy)); opacity:0.9; }
+@keyframes float {
+  from { transform:translate(0,0); }
+  to { transform:translate(var(--dx), var(--dy)); }
 }
 
-/* ================= DISPLAY ================= */
-.display {
-  width:100%;
-  height:70%;
-  position:relative;
-}
+/* ================= SVG ================= */
+svg { width:100%; height:100%; position:relative; z-index:3; }
 
-svg { width:100%; height:100%; }
-
-/* ================= WIREFRAME TEXT ================= */
+/* ================= WIREFRAME BASE ================= */
 .wire {
   fill:none;
   stroke:#9ffcff;
   stroke-width:2.2;
-  stroke-linejoin:round;
   stroke-linecap:round;
+  stroke-linejoin:round;
   filter:drop-shadow(0 0 6px rgba(0,255,255,0.7));
 }
 
+/* ================= LAYERS ================= */
 .wire.alt {
-  stroke:rgba(120,255,255,0.7);
   stroke-width:1.2;
-  stroke-dasharray:5 3;
+  stroke-dasharray:6 4;
 }
 
 .wire.inner {
-  stroke:rgba(0,220,255,0.55);
-  stroke-width:0.8;
-  stroke-dasharray:2 5;
+  stroke-width:0.9;
+  stroke-dasharray:2 6;
 }
 
-/* ===== TIME MODE ===== */
-.time-mode svg text { font-size:100px; }
+/* ================= FRAGMENTS ================= */
+.wire.frag1 {
+  stroke-width:1.4;
+  stroke-dasharray:12 8 4 10;
+  animation:frag1 4s ease-in-out infinite;
+}
+.wire.frag2 {
+  stroke-width:1.1;
+  stroke-dasharray:6 10 3 14;
+  animation:frag2 5s ease-in-out infinite;
+}
+.wire.frag3 {
+  stroke-width:0.8;
+  stroke-dasharray:2 6 8 12;
+  animation:frag3 6s ease-in-out infinite;
+}
+
+@keyframes frag1 { 50% { transform:translate(1px,-1px); } }
+@keyframes frag2 { 50% { transform:translate(-1px,1px); } }
+@keyframes frag3 { 50% { transform:translate(0.5px,1px); } }
+
+/* ================= TIME MODE ================= */
+.time-mode svg text {
+  font-size:95px;
+}
 
 /* ================= GLITCH ================= */
 .glitch svg {
-  animation: glitch 0.12s steps(2) infinite;
+  animation:glitch 0.12s steps(2) infinite;
 }
 
 @keyframes glitch {
-  0% { transform:translate(0,0); }
   25% { transform:translate(-3px,1px); }
   50% { transform:translate(3px,-1px); }
-  75% { transform:translate(-2px,0); }
-  100% { transform:translate(0,0); }
 }
 </style>
 </head>
@@ -184,63 +213,58 @@ svg { width:100%; height:100%; }
 <body>
 
 <div class="machine">
-  <!-- 🔘 TOGGLE BUTTON -->
+
   <div class="toggle" id="toggle">⟲</div>
 
-  <!-- PRICE DISPLAY -->
   <div class="screen">
-    <div class="electric"></div>
     <div class="particles" id="particles"></div>
 
     <div class="display" id="display">
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-        <text id="textMain"  x="50%" y="57%" text-anchor="middle"
-              font-size="140" class="wire">----</text>
-        <text id="textAlt"   x="50%" y="57%" text-anchor="middle"
-              font-size="140" class="wire alt">----</text>
-        <text id="textInner" x="50%" y="57%" text-anchor="middle"
-              font-size="140" class="wire inner">----</text>
+        <text x="50%" y="57%" text-anchor="middle" class="wire"        id="t1">----</text>
+        <text x="50%" y="57%" text-anchor="middle" class="wire alt"    id="t2">----</text>
+        <text x="50%" y="57%" text-anchor="middle" class="wire inner"  id="t3">----</text>
+        <text x="50%" y="57%" text-anchor="middle" class="wire frag1">----</text>
+        <text x="50%" y="57%" text-anchor="middle" class="wire frag2">----</text>
+        <text x="50%" y="57%" text-anchor="middle" class="wire frag3">----</text>
       </svg>
     </div>
   </div>
+
 </div>
 
 <script>
-const main = textMain;
-const alt = textAlt;
-const inner = textInner;
-const toggle = document.getElementById("toggle");
+const texts = document.querySelectorAll("svg text");
 const display = document.getElementById("display");
+const toggle = document.getElementById("toggle");
 const particles = document.getElementById("particles");
 
-const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
-const TIMEZONE = "America/Denver";
+const API = "https://api.coinbase.com/v2/prices/spot?currency=USD";
+const TZ = "America/Denver";
 
-let mode = "price";
-let lastPrice = "----";
+let mode="price", last="----";
 
 /* particles */
-for(let i=0;i<28;i++){
+for(let i=0;i<30;i++){
   const p=document.createElement("div");
   p.className="particle";
   p.style.left=Math.random()*100+"%";
   p.style.top=Math.random()*100+"%";
-  p.style.animationDuration=(6+Math.random()*10)+"s";
-  p.style.setProperty("--dx",(Math.random()*80-40)+"px");
-  p.style.setProperty("--dy",(Math.random()*60-30)+"px");
+  p.style.setProperty("--dx",(Math.random()*60-30)+"px");
+  p.style.setProperty("--dy",(Math.random()*40-20)+"px");
   particles.appendChild(p);
 }
 
 function setText(v){
-  main.textContent = alt.textContent = inner.textContent = v;
+  texts.forEach(t=>t.textContent=v);
 }
 
 async function updatePrice(){
   try{
-    const r=await fetch(API_URL);
+    const r=await fetch(API);
     const d=await r.json();
-    lastPrice=String(Math.round(Number(d.data.amount)));
-    if(mode==="price") setText(lastPrice);
+    last=String(Math.round(d.data.amount));
+    if(mode==="price") setText(last);
   }catch{
     setText("ERROR");
   }
@@ -249,7 +273,7 @@ async function updatePrice(){
 function updateTime(){
   if(mode!=="time") return;
   const t=new Intl.DateTimeFormat("en-US",{
-    timeZone:TIMEZONE,
+    timeZone:TZ,
     hour:"2-digit",
     minute:"2-digit",
     second:"2-digit",
@@ -261,13 +285,13 @@ function updateTime(){
 toggle.onclick=()=>{
   mode=mode==="price"?"time":"price";
   display.classList.toggle("time-mode",mode==="time");
-  if(mode==="price") setText(lastPrice);
+  if(mode==="price") setText(last);
 };
 
 function glitchLoop(){
   display.classList.add("glitch");
   setTimeout(()=>display.classList.remove("glitch"),120);
-  setTimeout(glitchLoop,1200+Math.random()*1200);
+  setTimeout(glitchLoop,800+Math.random()*800);
 }
 
 updatePrice();
