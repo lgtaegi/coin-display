@@ -2,12 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>BTC Core Display</title>
+<title>BTC Core Wire Display</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap" rel="stylesheet">
 
 <style>
 * {
@@ -24,7 +20,6 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  font-family: 'Rajdhani', monospace;
 }
 
 /* ===== MACHINE ===== */
@@ -39,86 +34,93 @@ html, body {
 .screen {
   position: absolute;
   left: 50%;
-  top: 48.5%;                       /* ⬅ 더 아래 */
-  transform: translate(-50%, -45%); /* ⬅ 시각적 보정 */
-
+  top: 49%;
+  transform: translate(-50%, -44%);
   width: 70%;
   height: 22%;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-/* ===== PRICE ===== */
-.price {
-  position: relative;
-  z-index: 2;
-
-  font-size: clamp(3.3rem, 6.4vw, 5.7rem);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-
-  color: transparent;
-  -webkit-text-stroke: 2.6px #7ffcff;
-
-  text-shadow:
-    0 0 1px rgba(180,255,255,0.9),
-    0 0 6px rgba(0,200,255,0.6);
-
-  filter: drop-shadow(0 0 8px rgba(0,255,255,0.75));
-}
-
-/* ===== PCB TRACE ===== */
-.price::before {
-  content: attr(data-text);
+/* ===== ELECTRIC BACKGROUND ===== */
+.electric {
   position: absolute;
   inset: 0;
-
-  color: transparent;
-  -webkit-text-stroke: 1.3px rgba(0,255,255,0.95);
-
+  pointer-events: none;
   background:
     repeating-linear-gradient(
       90deg,
-      rgba(0,255,255,0.95) 0px,
-      rgba(0,255,255,0.95) 1px,
+      rgba(0,255,255,0.1) 0px,
+      rgba(0,255,255,0.1) 1px,
       transparent 1px,
-      transparent 4px
+      transparent 14px
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(0,220,255,0.9) 0px,
-      rgba(0,220,255,0.9) 1px,
+      rgba(0,200,255,0.08) 0px,
+      rgba(0,200,255,0.08) 1px,
       transparent 1px,
-      transparent 7px
+      transparent 20px
     );
-
-  -webkit-background-clip: text;
-  background-clip: text;
-
-  text-shadow:
-    0 0 3px rgba(0,255,255,0.9),
-    0 0 8px rgba(0,200,255,0.6);
-
-  pointer-events: none;
+  animation: electricMove 18s linear infinite;
+  opacity: 0.35;
 }
 
-/* ===== TOGGLE ICON ===== */
+@keyframes electricMove {
+  to {
+    background-position: 300px 150px, -150px 300px;
+  }
+}
+
+/* ===== SVG DISPLAY ===== */
+.display {
+  width: 100%;
+  height: 70%;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== WIRE TEXT ===== */
+.wire {
+  fill: none;
+  stroke: #9ffcff;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(0,255,255,0.7));
+}
+
+/* secondary wire */
+.wire.alt {
+  stroke: rgba(120,255,255,0.6);
+  stroke-width: 1.2;
+  stroke-dasharray: 6 4;
+}
+
+/* tertiary inner structure */
+.wire.inner {
+  stroke: rgba(0,200,255,0.5);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 6;
+}
+
+/* ===== TIME MODE ===== */
+.time-mode .wire {
+  stroke-width: 1.6;
+}
+
+/* ===== TOGGLE ===== */
 .toggle {
   margin-top: 8px;
   font-size: 1rem;
   color: rgba(180,245,255,0.9);
-  letter-spacing: 0.2em;
   cursor: pointer;
-  pointer-events: auto;
   user-select: none;
-  transition: opacity 0.2s ease;
-}
-
-.toggle:hover {
-  opacity: 1;
 }
 </style>
 </head>
@@ -127,33 +129,55 @@ html, body {
 
 <div class="machine">
   <div class="screen">
-    <div class="price" id="display" data-text="----">----</div>
+    <div class="electric"></div>
+
+    <div class="display" id="display">
+      <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
+        <text id="textMain" x="50%" y="60%" text-anchor="middle"
+              font-size="140" font-family="monospace"
+              class="wire">----</text>
+
+        <text id="textAlt" x="50%" y="60%" text-anchor="middle"
+              font-size="140" font-family="monospace"
+              class="wire alt">----</text>
+
+        <text id="textInner" x="50%" y="60%" text-anchor="middle"
+              font-size="140" font-family="monospace"
+              class="wire inner">----</text>
+      </svg>
+    </div>
+
     <div class="toggle" id="toggle">⟲</div>
   </div>
 </div>
 
 <script>
-const displayEl = document.getElementById("display");
-const toggleEl = document.getElementById("toggle");
+const main = document.getElementById("textMain");
+const alt = document.getElementById("textAlt");
+const inner = document.getElementById("textInner");
+const toggle = document.getElementById("toggle");
+const display = document.getElementById("display");
 
 const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
 const TIMEZONE = "America/Denver";
 
-let mode = "price";   // price | time
+let mode = "price";
 let lastPrice = "----";
+
+function setText(val) {
+  main.textContent = val;
+  alt.textContent = val;
+  inner.textContent = val;
+}
 
 async function updatePrice() {
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
     lastPrice = Math.round(Number(data.data.amount)).toLocaleString();
-    if (mode === "price") {
-      displayEl.textContent = lastPrice;
-      displayEl.setAttribute("data-text", lastPrice);
-    }
+    if (mode === "price") setText(lastPrice);
   } catch {
-    displayEl.textContent = "ERROR";
-    displayEl.setAttribute("data-text", "ERROR");
+    setText("ERROR");
   }
 }
 
@@ -168,16 +192,17 @@ function updateTime() {
     hour12: true
   }).format(new Date());
 
-  displayEl.textContent = time;
-  displayEl.setAttribute("data-text", time);
+  setText(time);
 }
 
-toggleEl.addEventListener("click", () => {
+toggle.addEventListener("click", () => {
   mode = mode === "price" ? "time" : "price";
 
   if (mode === "price") {
-    displayEl.textContent = lastPrice;
-    displayEl.setAttribute("data-text", lastPrice);
+    display.classList.remove("time-mode");
+    setText(lastPrice);
+  } else {
+    display.classList.add("time-mode");
   }
 });
 
