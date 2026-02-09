@@ -39,8 +39,8 @@ html, body {
 .screen {
   position: absolute;
   left: 50%;
-  top: 47%;
-  transform: translate(-50%, -46%); /* ⬅ 1~2px 아래 효과 */
+  top: 48.5%;                       /* ⬅ 더 아래 */
+  transform: translate(-50%, -45%); /* ⬅ 시각적 보정 */
 
   width: 70%;
   height: 22%;
@@ -49,8 +49,6 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  pointer-events: none;
 }
 
 /* ===== PRICE ===== */
@@ -58,28 +56,28 @@ html, body {
   position: relative;
   z-index: 2;
 
-  font-size: clamp(3.2rem, 6.2vw, 5.6rem);
+  font-size: clamp(3.3rem, 6.4vw, 5.7rem);
   font-weight: 700;
   letter-spacing: 0.1em;
 
   color: transparent;
-  -webkit-text-stroke: 2.4px #7ffcff;
+  -webkit-text-stroke: 2.6px #7ffcff;
 
   text-shadow:
-    0 0 2px rgba(160,255,255,0.9),
-    0 0 8px rgba(0,200,255,0.7);
+    0 0 1px rgba(180,255,255,0.9),
+    0 0 6px rgba(0,200,255,0.6);
 
-  filter: drop-shadow(0 0 10px rgba(0,255,255,0.8));
+  filter: drop-shadow(0 0 8px rgba(0,255,255,0.75));
 }
 
-/* ===== PCB INNER TRACE ===== */
+/* ===== PCB TRACE ===== */
 .price::before {
   content: attr(data-text);
   position: absolute;
   inset: 0;
 
   color: transparent;
-  -webkit-text-stroke: 1.2px rgba(0,255,255,0.9);
+  -webkit-text-stroke: 1.3px rgba(0,255,255,0.95);
 
   background:
     repeating-linear-gradient(
@@ -87,33 +85,40 @@ html, body {
       rgba(0,255,255,0.95) 0px,
       rgba(0,255,255,0.95) 1px,
       transparent 1px,
-      transparent 5px
+      transparent 4px
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(0,220,255,0.85) 0px,
-      rgba(0,220,255,0.85) 1px,
+      rgba(0,220,255,0.9) 0px,
+      rgba(0,220,255,0.9) 1px,
       transparent 1px,
-      transparent 8px
+      transparent 7px
     );
 
   -webkit-background-clip: text;
   background-clip: text;
 
   text-shadow:
-    0 0 4px rgba(0,255,255,0.9),
-    0 0 10px rgba(0,200,255,0.6);
+    0 0 3px rgba(0,255,255,0.9),
+    0 0 8px rgba(0,200,255,0.6);
 
   pointer-events: none;
 }
 
 /* ===== TOGGLE ICON ===== */
 .toggle {
-  margin-top: 6px;
-  font-size: 0.9rem;
-  color: rgba(160,240,255,0.8);
-  letter-spacing: 0.15em;
-  opacity: 0.85;
+  margin-top: 8px;
+  font-size: 1rem;
+  color: rgba(180,245,255,0.9);
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.toggle:hover {
+  opacity: 1;
 }
 </style>
 </head>
@@ -122,30 +127,63 @@ html, body {
 
 <div class="machine">
   <div class="screen">
-    <div class="price" id="price" data-text="--">--</div>
-    <div class="toggle">⟲</div>
+    <div class="price" id="display" data-text="----">----</div>
+    <div class="toggle" id="toggle">⟲</div>
   </div>
 </div>
 
 <script>
-const priceEl = document.getElementById("price");
+const displayEl = document.getElementById("display");
+const toggleEl = document.getElementById("toggle");
+
 const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
+const TIMEZONE = "America/Denver";
+
+let mode = "price";   // price | time
+let lastPrice = "----";
 
 async function updatePrice() {
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
-    const value = `$${Math.round(Number(data.data.amount)).toLocaleString()}`;
-    priceEl.textContent = value;
-    priceEl.setAttribute("data-text", value);
+    lastPrice = Math.round(Number(data.data.amount)).toLocaleString();
+    if (mode === "price") {
+      displayEl.textContent = lastPrice;
+      displayEl.setAttribute("data-text", lastPrice);
+    }
   } catch {
-    priceEl.textContent = "ERROR";
-    priceEl.setAttribute("data-text", "ERROR");
+    displayEl.textContent = "ERROR";
+    displayEl.setAttribute("data-text", "ERROR");
   }
 }
 
+function updateTime() {
+  if (mode !== "time") return;
+
+  const time = new Intl.DateTimeFormat("en-US", {
+    timeZone: TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  }).format(new Date());
+
+  displayEl.textContent = time;
+  displayEl.setAttribute("data-text", time);
+}
+
+toggleEl.addEventListener("click", () => {
+  mode = mode === "price" ? "time" : "price";
+
+  if (mode === "price") {
+    displayEl.textContent = lastPrice;
+    displayEl.setAttribute("data-text", lastPrice);
+  }
+});
+
 updatePrice();
 setInterval(updatePrice, 12000);
+setInterval(updateTime, 1000);
 </script>
 
 </body>
