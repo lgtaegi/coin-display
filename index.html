@@ -5,10 +5,9 @@ Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Shortened price-change scan line (display-only, 50% width)
-- Enhanced floating background particles (bigger & brighter)
-- Removed rotating machine core light effect
-- Center alignment and timing unchanged
+- Added full-screen rotating ring light aligned with toggle center
+- Ring acts as background machine light (360° rotation)
+- No changes to display, particles, scan, or text
 -->
 
 <!DOCTYPE html>
@@ -44,6 +43,43 @@ html, body {
   background:url("machine-bg.png") center/contain no-repeat;
 }
 
+/* ================= ROTATING RING LIGHT ================= */
+.ring-light {
+  position:absolute;
+  left:50%;
+  top:calc(27% + var(--toggle-offset-y));
+  width:120%;
+  height:120%;
+  transform:translate(-50%, -50%);
+  pointer-events:none;
+  z-index:0;
+
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(0,255,255,0.15) 40deg,
+      rgba(255,255,255,0.35) 60deg,
+      rgba(0,255,255,0.15) 90deg,
+      transparent 140deg
+    );
+
+  mask-image:radial-gradient(circle at center,
+    transparent 48%,
+    black 52%,
+    black 56%,
+    transparent 60%
+  );
+
+  animation:ringRotate 18s linear infinite;
+  filter:blur(1px);
+}
+
+@keyframes ringRotate {
+  from { transform:translate(-50%, -50%) rotate(0deg); }
+  to   { transform:translate(-50%, -50%) rotate(360deg); }
+}
+
 /* ================= TOGGLE ================= */
 .toggle {
   position:absolute;
@@ -60,6 +96,8 @@ html, body {
   color:white;
   cursor:pointer;
   user-select:none;
+  z-index:3;
+
   border:1px solid rgba(180,240,255,0.9);
   background:radial-gradient(circle, rgba(0,255,255,0.35), rgba(0,120,255,0.05));
   box-shadow:0 0 18px rgba(0,255,255,1), inset 0 0 12px rgba(0,255,255,0.7);
@@ -74,6 +112,7 @@ html, body {
   width:70%;
   height:22%;
   position:relative;
+  z-index:2;
 }
 
 /* ================= PARTICLES ================= */
@@ -218,11 +257,16 @@ svg {
 <body>
 
 <div class="machine">
+
+  <!-- 🔵 rotating machine light -->
+  <div class="ring-light"></div>
+
+  <!-- 🔘 toggle -->
   <div class="toggle" id="toggle">⟲</div>
 
+  <!-- display -->
   <div class="screen">
     <div class="particles" id="particles"></div>
-
     <div class="display" id="display">
       <div class="scan" id="scan"></div>
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
@@ -232,6 +276,7 @@ svg {
       </svg>
     </div>
   </div>
+
 </div>
 
 <script>
