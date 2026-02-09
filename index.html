@@ -1,13 +1,13 @@
 <!--
 Project: BTC Core Display
-Version: 1.10
+Version: 1.11
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Toggle button moved additional 20px upward
-- Floating white particles brightened and increased
-- Added linear particle motion (horizontal & vertical)
+- Ensured only one background image is rendered
+- Added long trail effect to linear moving particles
+- Toggle button moved additional 10px upward
 -->
 
 <!DOCTYPE html>
@@ -32,7 +32,7 @@ html, body {
   font-family:monospace;
 }
 
-/* ================= MACHINE ================= */
+/* ================= MACHINE (ONLY IMAGE) ================= */
 .machine {
   position:relative;
   width:min(92vw, 900px);
@@ -53,7 +53,7 @@ html, body {
   justify-content:center;
 }
 
-/* ================= STATIC ELECTRIC LAYER ================= */
+/* ================= STATIC ELECTRIC OVERLAY ================= */
 .electric {
   position:absolute;
   inset:0;
@@ -64,16 +64,16 @@ html, body {
       rgba(0,255,255,0.08) 0px,
       rgba(0,255,255,0.08) 1px,
       transparent 1px,
-      transparent 16px
+      transparent 18px
     ),
     repeating-linear-gradient(
       0deg,
       rgba(0,200,255,0.06) 0px,
       rgba(0,200,255,0.06) 1px,
       transparent 1px,
-      transparent 22px
+      transparent 26px
     );
-  opacity:0.22;
+  opacity:0.18;
 }
 
 /* ================= PARTICLES ================= */
@@ -84,51 +84,61 @@ html, body {
   overflow:hidden;
 }
 
-/* base particle */
-.particle {
+/* soft floating dots */
+.particle.float {
   position:absolute;
   width:2px;
   height:2px;
   border-radius:50%;
-  background:rgba(255,255,255,0.95);
-  box-shadow:
-    0 0 6px rgba(255,255,255,0.9),
-    0 0 12px rgba(200,255,255,0.9);
-  opacity:0.85;
-}
-
-/* floating (soft) */
-.particle.float {
+  background:white;
+  opacity:0.75;
+  box-shadow:0 0 6px rgba(255,255,255,0.9);
   animation: floatSoft linear infinite;
 }
 
-/* linear horizontal */
+/* horizontal trail */
 .particle.h {
-  width:2px;
-  height:2px;
+  position:absolute;
+  width:26px;
+  height:1px;
+  background:linear-gradient(
+    90deg,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0.9),
+    rgba(255,255,255,0)
+  );
+  filter:blur(0.6px);
   animation: moveH linear infinite;
 }
 
-/* linear vertical */
+/* vertical trail */
 .particle.v {
-  width:2px;
-  height:2px;
+  position:absolute;
+  width:1px;
+  height:22px;
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0.9),
+    rgba(255,255,255,0)
+  );
+  filter:blur(0.6px);
   animation: moveV linear infinite;
 }
 
 @keyframes floatSoft {
-  from { transform:translate(0,0); opacity:0.4; }
-  to   { transform:translate(var(--dx), var(--dy)); opacity:1; }
+  from { transform:translate(0,0); opacity:0.3; }
+  to   { transform:translate(var(--dx), var(--dy)); opacity:0.9; }
 }
 
 @keyframes moveH {
-  from { transform:translateX(-120px); opacity:0.3; }
-  to   { transform:translateX(120px); opacity:1; }
+  from { transform:translateX(-140px); }
+  to   { transform:translateX(140px); }
 }
 
 @keyframes moveV {
-  from { transform:translateY(-80px); opacity:0.3; }
-  to   { transform:translateY(80px); opacity:1; }
+  from { transform:translateY(-100px); }
+  to   { transform:translateY(100px); }
 }
 
 /* ================= DISPLAY ================= */
@@ -183,8 +193,8 @@ svg { width:100%; height:100%; }
 .toggle {
   position:absolute;
 
-  /* ⬆ 기존보다 20px 추가 상승 */
-  top:calc(-50% - 60px);
+  /* ⬆ 기존보다 +10px */
+  top:calc(-50% - 70px);
   left:50%;
   transform:translate(-50%, -50%);
 
@@ -197,12 +207,12 @@ svg { width:100%; height:100%; }
   justify-content:center;
 
   font-size:1rem;
-  color:rgba(240,255,255,0.95);
+  color:white;
 
-  border:1px solid rgba(160,240,255,0.9);
+  border:1px solid rgba(180,240,255,0.9);
   background:radial-gradient(
     circle,
-    rgba(0,255,255,0.3),
+    rgba(0,255,255,0.35),
     rgba(0,120,255,0.05)
   );
 
@@ -210,7 +220,7 @@ svg { width:100%; height:100%; }
   user-select:none;
 
   box-shadow:
-    0 0 14px rgba(0,255,255,0.9),
+    0 0 16px rgba(0,255,255,1),
     inset 0 0 10px rgba(0,255,255,0.7);
 }
 </style>
@@ -252,40 +262,38 @@ const TIMEZONE = "America/Denver";
 let mode = "price";
 let lastPrice = "----";
 
-/* ===== PARTICLE GENERATION ===== */
-const COUNT_FLOAT = 24;
-const COUNT_H = 14;
-const COUNT_V = 14;
+/* ===== PARTICLES ===== */
+const FLOAT = 18, H = 16, V = 16;
 
-/* soft floating */
-for (let i=0;i<COUNT_FLOAT;i++){
-  const p = document.createElement("div");
-  p.className = "particle float";
-  p.style.left = Math.random()*100 + "%";
-  p.style.top = Math.random()*100 + "%";
-  p.style.animationDuration = (6 + Math.random()*10) + "s";
+/* floating dots */
+for(let i=0;i<FLOAT;i++){
+  const p=document.createElement("div");
+  p.className="particle float";
+  p.style.left=Math.random()*100+"%";
+  p.style.top=Math.random()*100+"%";
+  p.style.animationDuration=(6+Math.random()*10)+"s";
   p.style.setProperty("--dx",(Math.random()*80-40)+"px");
   p.style.setProperty("--dy",(Math.random()*60-30)+"px");
   particles.appendChild(p);
 }
 
-/* horizontal movers */
-for (let i=0;i<COUNT_H;i++){
-  const p = document.createElement("div");
-  p.className = "particle h";
-  p.style.left = Math.random()*100 + "%";
-  p.style.top = Math.random()*100 + "%";
-  p.style.animationDuration = (3 + Math.random()*4) + "s";
+/* horizontal trails */
+for(let i=0;i<H;i++){
+  const p=document.createElement("div");
+  p.className="particle h";
+  p.style.left=Math.random()*100+"%";
+  p.style.top=Math.random()*100+"%";
+  p.style.animationDuration=(3+Math.random()*4)+"s";
   particles.appendChild(p);
 }
 
-/* vertical movers */
-for (let i=0;i<COUNT_V;i++){
-  const p = document.createElement("div");
-  p.className = "particle v";
-  p.style.left = Math.random()*100 + "%";
-  p.style.top = Math.random()*100 + "%";
-  p.style.animationDuration = (3 + Math.random()*4) + "s";
+/* vertical trails */
+for(let i=0;i<V;i++){
+  const p=document.createElement("div");
+  p.className="particle v";
+  p.style.left=Math.random()*100+"%";
+  p.style.top=Math.random()*100+"%";
+  p.style.animationDuration=(3+Math.random()*4)+"s";
   particles.appendChild(p);
 }
 
@@ -295,19 +303,19 @@ function setText(v){
 }
 
 async function updatePrice(){
-  try {
-    const r = await fetch(API_URL);
-    const d = await r.json();
-    lastPrice = String(Math.round(Number(d.data.amount)));
+  try{
+    const r=await fetch(API_URL);
+    const d=await r.json();
+    lastPrice=String(Math.round(Number(d.data.amount)));
     if(mode==="price") setText(lastPrice);
-  } catch {
+  }catch{
     setText("ERROR");
   }
 }
 
 function updateTime(){
   if(mode!=="time") return;
-  const t = new Intl.DateTimeFormat("en-US", {
+  const t=new Intl.DateTimeFormat("en-US",{
     timeZone:TIMEZONE,
     hour:"2-digit",
     minute:"2-digit",
@@ -317,9 +325,9 @@ function updateTime(){
   setText(t);
 }
 
-toggle.onclick = () => {
-  mode = mode==="price" ? "time" : "price";
-  display.classList.toggle("time-mode", mode==="time");
+toggle.onclick=()=>{
+  mode=mode==="price"?"time":"price";
+  display.classList.toggle("time-mode",mode==="time");
   if(mode==="price") setText(lastPrice);
 };
 
@@ -327,7 +335,7 @@ toggle.onclick = () => {
 function glitchLoop(){
   display.classList.add("glitch");
   setTimeout(()=>display.classList.remove("glitch"),120);
-  setTimeout(glitchLoop,1200 + Math.random()*1200);
+  setTimeout(glitchLoop,1200+Math.random()*1200);
 }
 
 updatePrice();
@@ -335,297 +343,6 @@ glitchLoop();
 
 setInterval(updatePrice,12000);
 setInterval(updateTime,1000);
-</script>
-
-</body>
-</html>
-<!--
-Project: BTC Core Display
-Version: 1.09
-Date: 2026-02-09
-Author: lgtaegi
-
-Updates:
-- Toggle button moved additional 20px upward
-- Removed moving grid / stream background motion
-- Added floating micro-particle electronic effect inside display
--->
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>BTC Core Wire Display</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<style>
-/* ================= RESET ================= */
-* { margin:0; padding:0; box-sizing:border-box; }
-
-html, body {
-  width:100%;
-  height:100%;
-  background:black;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  font-family:monospace;
-}
-
-/* ================= MACHINE ================= */
-.machine {
-  position:relative;
-  width:min(92vw, 900px);
-  aspect-ratio:1/1;
-  background:url("machine-bg.png") center/contain no-repeat;
-}
-
-/* ================= SCREEN ================= */
-.screen {
-  position:absolute;
-  left:50%;
-  top:49%;
-  transform:translate(-50%, -44%);
-  width:70%;
-  height:22%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* ================= ELECTRIC LAYER (STATIC) ================= */
-.electric {
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(0,255,255,0.10) 0px,
-      rgba(0,255,255,0.10) 1px,
-      transparent 1px,
-      transparent 14px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(0,200,255,0.08) 0px,
-      rgba(0,200,255,0.08) 1px,
-      transparent 1px,
-      transparent 20px
-    );
-  opacity:0.25;
-}
-
-/* ================= FLOATING PARTICLES ================= */
-.particles {
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  overflow:hidden;
-}
-
-.particle {
-  position:absolute;
-  width:2px;
-  height:2px;
-  border-radius:50%;
-  background:rgba(180,255,255,0.85);
-  box-shadow:0 0 6px rgba(0,255,255,0.8);
-  animation: float linear infinite;
-  opacity:0.6;
-}
-
-@keyframes float {
-  from {
-    transform:translate(0,0);
-    opacity:0.2;
-  }
-  to {
-    transform:translate(var(--dx), var(--dy));
-    opacity:0.8;
-  }
-}
-
-/* ================= DISPLAY ================= */
-.display {
-  width:100%;
-  height:70%;
-  position:relative;
-}
-
-/* ================= SVG ================= */
-svg { width:100%; height:100%; }
-
-/* ================= WIREFRAME TEXT ================= */
-.wire {
-  fill:none;
-  stroke:#9ffcff;
-  stroke-width:2.2;
-  stroke-linejoin:round;
-  stroke-linecap:round;
-  filter:drop-shadow(0 0 6px rgba(0,255,255,0.7));
-}
-
-.wire.alt {
-  stroke:rgba(120,255,255,0.7);
-  stroke-width:1.2;
-  stroke-dasharray:5 3;
-}
-
-.wire.inner {
-  stroke:rgba(0,220,255,0.55);
-  stroke-width:0.8;
-  stroke-dasharray:2 5;
-}
-
-/* ===== TIME MODE ===== */
-.time-mode svg text { font-size:100px; }
-
-/* ================= GLITCH ================= */
-.glitch svg {
-  animation: glitch 0.12s steps(2) infinite;
-}
-
-@keyframes glitch {
-  0% { transform:translate(0,0); }
-  25% { transform:translate(-3px,1px); }
-  50% { transform:translate(3px,-1px); }
-  75% { transform:translate(-2px,0); }
-  100% { transform:translate(0,0); }
-}
-
-/* ================= TOGGLE BUTTON ================= */
-.toggle {
-  position:absolute;
-
-  /* ⬆ 기존 위치에서 추가 20px */
-  top:calc(-50% - 40px);
-  left:50%;
-  transform:translate(-50%, -50%);
-
-  width:36px;
-  height:36px;
-  border-radius:50%;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  font-size:1rem;
-  color:rgba(220,255,255,0.95);
-
-  border:1px solid rgba(140,240,255,0.8);
-  background:radial-gradient(
-    circle,
-    rgba(0,255,255,0.25),
-    rgba(0,120,255,0.05)
-  );
-
-  cursor:pointer;
-  user-select:none;
-
-  box-shadow:
-    0 0 12px rgba(0,255,255,0.8),
-    inset 0 0 8px rgba(0,255,255,0.6);
-}
-</style>
-</head>
-
-<body>
-
-<div class="machine">
-  <div class="screen">
-    <div class="electric"></div>
-    <div class="particles" id="particles"></div>
-
-    <div class="display" id="display">
-      <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-        <text id="textMain"  x="50%" y="57%" text-anchor="middle"
-              font-size="140" class="wire">----</text>
-        <text id="textAlt"   x="50%" y="57%" text-anchor="middle"
-              font-size="140" class="wire alt">----</text>
-        <text id="textInner" x="50%" y="57%" text-anchor="middle"
-              font-size="140" class="wire inner">----</text>
-      </svg>
-
-      <div class="toggle" id="toggle">⟲</div>
-    </div>
-  </div>
-</div>
-
-<script>
-const main = textMain;
-const alt = textAlt;
-const inner = textInner;
-const toggle = document.getElementById("toggle");
-const display = document.getElementById("display");
-const particles = document.getElementById("particles");
-
-const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
-const TIMEZONE = "America/Denver";
-
-let mode = "price";
-let lastPrice = "----";
-
-/* ===== PARTICLE GENERATOR ===== */
-for (let i = 0; i < 28; i++) {
-  const p = document.createElement("div");
-  p.className = "particle";
-  p.style.left = Math.random() * 100 + "%";
-  p.style.top = Math.random() * 100 + "%";
-  p.style.animationDuration = 6 + Math.random() * 10 + "s";
-  p.style.setProperty("--dx", (Math.random()*80 - 40) + "px");
-  p.style.setProperty("--dy", (Math.random()*60 - 30) + "px");
-  particles.appendChild(p);
-}
-
-/* ===== TEXT ===== */
-function setText(v){
-  main.textContent = alt.textContent = inner.textContent = v;
-}
-
-async function updatePrice(){
-  try {
-    const r = await fetch(API_URL);
-    const d = await r.json();
-    lastPrice = String(Math.round(Number(d.data.amount)));
-    if(mode==="price") setText(lastPrice);
-  } catch {
-    setText("ERROR");
-  }
-}
-
-function updateTime(){
-  if(mode!=="time") return;
-  const t = new Intl.DateTimeFormat("en-US", {
-    timeZone:TIMEZONE,
-    hour:"2-digit",
-    minute:"2-digit",
-    second:"2-digit",
-    hour12:true
-  }).format(new Date());
-  setText(t);
-}
-
-toggle.onclick = () => {
-  mode = mode==="price" ? "time" : "price";
-  display.classList.toggle("time-mode", mode==="time");
-  if(mode==="price") setText(lastPrice);
-};
-
-/* ===== GLITCH LOOP ===== */
-function glitchLoop(){
-  display.classList.add("glitch");
-  setTimeout(()=>display.classList.remove("glitch"), 120);
-  setTimeout(glitchLoop, 1500 + Math.random()*1500);
-}
-
-updatePrice();
-glitchLoop();
-
-setInterval(updatePrice, 12000);
-setInterval(updateTime, 1000);
 </script>
 
 </body>
