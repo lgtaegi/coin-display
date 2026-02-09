@@ -1,10 +1,3 @@
-<!--
-coin-display
-Version: 0.1
-Author: lgtaegi
-Mode: CINEMATIC / TRON WIREFRAME
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,152 +5,182 @@ Mode: CINEMATIC / TRON WIREFRAME
 <title>coin-display</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+<!-- Futuristic HUD Font -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+/* ===== Reset ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
+/* ===== Background ===== */
 html, body {
-  width:100%;
-  height:100%;
-  background: radial-gradient(circle at center, #030611, #000);
-  overflow:hidden;
-  color:#eaffff;
-  font-family:'Oxanium', monospace;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at center, #0b1325, #02040a),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,255,255,0.04) 0,
+      rgba(0,255,255,0.04) 1px,
+      transparent 1px,
+      transparent 70px
+    );
+  overflow: hidden;
+  font-family: 'Rajdhani', monospace;
+  color: #eaf6ff;
 }
 
-/* ===== Starfield ===== */
+/* subtle particles */
 body::before {
-  content:"";
-  position:fixed;
-  inset:0;
+  content: "";
+  position: fixed;
+  inset: 0;
   background-image:
-    radial-gradient(1px 1px at 20% 30%, #6ff, transparent),
-    radial-gradient(1px 1px at 80% 40%, #6ff, transparent),
-    radial-gradient(1px 1px at 50% 80%, #6ff, transparent),
-    radial-gradient(1px 1px at 70% 60%, #6ff, transparent),
-    radial-gradient(1px 1px at 30% 70%, #6ff, transparent);
-  animation: starDrift 90s linear infinite;
-  opacity:0.45;
+    radial-gradient(1px 1px at 20% 30%, rgba(200,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 80% 40%, rgba(200,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 50% 80%, rgba(200,255,255,0.8), transparent);
+  opacity: 0.35;
+  animation: drift 120s linear infinite;
 }
 
-@keyframes starDrift {
+@keyframes drift {
   to { transform: translateY(240px); }
 }
 
 /* ===== Layout ===== */
 body {
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .container {
-  position:relative;
-  z-index:2;
-  text-align:center;
+  position: relative;
+  text-align: center;
+  z-index: 2;
 }
 
-/* ===== Energy Core ===== */
-.energy-field {
-  position:relative;
-  padding:50px 80px;
+/* ===== Price Core ===== */
+.core {
+  position: relative;
+  padding: 60px 90px;
 }
 
-.energy-field::before {
-  content:"";
-  position:absolute;
-  inset:-50px;
-  border-radius:50%;
-  border:1px solid rgba(0,255,255,0.35);
-  filter:blur(16px);
-  animation:pulse 6s ease-in-out infinite;
+.core::before {
+  content: "";
+  position: absolute;
+  inset: -60px;
+  border-radius: 50%;
+  border: 1px solid rgba(120,220,255,0.35);
+  filter: blur(18px);
+  animation: pulse 7s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%,100% { transform:scale(0.9); opacity:0.35; }
-  50%     { transform:scale(1.1); opacity:1; }
+  0%,100% { transform: scale(0.9); opacity: 0.35; }
+  50%     { transform: scale(1.1); opacity: 1; }
 }
 
-/* ===== WIREFRAME PRICE ===== */
-.main {
-  font-size:clamp(3.5rem,10vw,8.5rem);
-  font-weight:800;
-  letter-spacing:0.14em;
-  color:transparent;
-  -webkit-text-stroke: 1.5px rgba(120,255,255,0.9);
+/* ===== Main Price (Hologram Glass) ===== */
+.price {
+  position: relative;
+  font-size: clamp(3.5rem, 10vw, 8.5rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(235,248,255,0.95);
 
   text-shadow:
-    0 0 6px rgba(0,255,255,0.9),
-    0 0 14px rgba(0,200,255,0.8),
-    0 0 30px rgba(0,160,255,0.6),
-    2px 2px 0 rgba(0,120,255,0.35),
-    -2px -2px 0 rgba(0,120,255,0.25);
+    0 0 2px rgba(255,255,255,0.9),
+    0 0 10px rgba(120,220,255,0.9),
+    0 0 26px rgba(80,180,255,0.7),
+    0 0 60px rgba(150,120,255,0.4);
+
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.45));
 }
 
-/* ===== SLOW GHOSTS ===== */
+.price::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(255,255,255,0.12),
+      rgba(255,255,255,0.02),
+      rgba(255,255,255,0.12)
+    );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* ===== Price Ghosts ===== */
 .ghost {
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  font-size:clamp(3.5rem,10vw,8.5rem);
-  font-weight:600;
-  color:transparent;
-  -webkit-text-stroke: 1px rgba(80,200,255,0.7);
-  pointer-events:none;
-  animation: driftBackSlow 18s linear forwards;
-  opacity:0.85;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(3.5rem, 10vw, 8.5rem);
+  font-weight: 600;
+  color: rgba(200,240,255,0.85);
+  pointer-events: none;
 
   text-shadow:
-    0 0 12px rgba(0,200,255,0.7),
-    0 0 30px rgba(0,160,255,0.5);
+    0 0 14px rgba(120,220,255,0.7),
+    0 0 34px rgba(80,180,255,0.5);
+
+  animation: ghostDrift 20s linear forwards;
 }
 
-@keyframes driftBackSlow {
-  0% {
-    transform:translate(-50%,-50%) scale(1);
-    opacity:0.85;
+@keyframes ghostDrift {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.9;
   }
-  100% {
-    transform:translate(-50%,-320%) scale(0.22);
-    opacity:0;
+  to {
+    transform: translate(-50%, -340%) scale(0.22);
+    opacity: 0;
   }
 }
 
-/* ===== Meteor (유지) ===== */
+/* ===== Meteor ===== */
 .meteor {
-  position:fixed;
-  width:380px;
-  height:4px;
-  background:linear-gradient(90deg,
+  position: fixed;
+  width: 420px;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
     rgba(255,255,255,0),
-    rgba(0,255,255,0.7),
-    rgba(0,255,255,1)
+    rgba(120,220,255,0.7),
+    rgba(180,120,255,1)
   );
-  filter:drop-shadow(0 0 28px cyan);
-  transform-origin:left center;
-  animation: meteorFly 1.6s ease-out forwards;
-  z-index:1;
+  filter: drop-shadow(0 0 30px rgba(160,220,255,1));
+  transform-origin: left center;
+  animation: meteorFly 1.7s ease-out forwards;
+  z-index: 1;
 }
 
 @keyframes meteorFly {
   from {
-    transform:translate(0,0) rotate(var(--angle)) scaleX(0.3);
-    opacity:1;
+    transform: translate(0,0) rotate(var(--angle)) scaleX(0.3);
+    opacity: 1;
   }
   to {
-    transform:translate(var(--dx), var(--dy)) rotate(var(--angle)) scaleX(1.3);
-    opacity:0;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--angle)) scaleX(1.3);
+    opacity: 0;
   }
 }
 
-.sub-time {
-  margin-top:20px;
-  font-size:0.9rem;
-  opacity:0.7;
+/* ===== Time ===== */
+.time {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  opacity: 0.7;
 }
 </style>
 </head>
@@ -165,10 +188,10 @@ body {
 <body>
 
 <div class="container" id="container">
-  <div class="energy-field">
-    <div class="main" id="price">--</div>
+  <div class="core">
+    <div class="price" id="price">--</div>
   </div>
-  <div class="sub-time" id="time">--</div>
+  <div class="time" id="time">--</div>
 </div>
 
 <script>
@@ -179,22 +202,24 @@ const timeEl = document.getElementById("time");
 const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
 const TIMEZONE = "America/Denver";
 
-let priceHistory = [];
+let history = [];
 
-function getTime() {
+function localTime() {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: TIMEZONE,
-    hour:"2-digit", minute:"2-digit", second:"2-digit",
-    hour12:true
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
   }).format(new Date());
 }
 
 function spawnGhost(text) {
-  const ghost = document.createElement("div");
-  ghost.className = "ghost";
-  ghost.textContent = text;
-  container.appendChild(ghost);
-  setTimeout(() => ghost.remove(), 18000);
+  const g = document.createElement("div");
+  g.className = "ghost";
+  g.textContent = text;
+  container.appendChild(g);
+  setTimeout(() => g.remove(), 20000);
 }
 
 function spawnMeteor() {
@@ -204,8 +229,8 @@ function spawnMeteor() {
   const startX = Math.random() * window.innerWidth;
   const startY = Math.random() * window.innerHeight * 0.4;
   const angle = 15 + Math.random() * 35;
-  const dx = 600 + Math.random() * 600;
-  const dy = 300 + Math.random() * 400;
+  const dx = 700 + Math.random() * 700;
+  const dy = 350 + Math.random() * 450;
 
   m.style.left = `${startX}px`;
   m.style.top = `${startY}px`;
@@ -214,38 +239,39 @@ function spawnMeteor() {
   m.style.setProperty("--dy", `${dy}px`);
 
   document.body.appendChild(m);
-  setTimeout(() => m.remove(), 1600);
-  setTimeout(spawnMeteor, 3000 + Math.random() * 5000);
+  setTimeout(() => m.remove(), 1800);
+
+  setTimeout(spawnMeteor, 2500 + Math.random() * 4000);
 }
 
 async function fetchPrice() {
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
-    const newPrice = `$${Math.round(Number(data.data.amount)).toLocaleString()}`;
+    const value = `$${Math.round(Number(data.data.amount)).toLocaleString()}`;
 
-    if (priceHistory.length && newPrice !== priceHistory[0]) {
-      spawnGhost(priceHistory[0]);
+    if (history.length && value !== history[0]) {
+      spawnGhost(history[0]);
     }
 
-    priceHistory.unshift(newPrice);
-    priceHistory = priceHistory.slice(0, 3);
+    history.unshift(value);
+    history = history.slice(0, 3);
 
-    priceEl.textContent = newPrice;
+    priceEl.textContent = value;
   } catch {
     priceEl.textContent = "ERROR";
   }
 }
 
 function updateTime() {
-  timeEl.textContent = `Salt Lake City · ${getTime()}`;
+  timeEl.textContent = `Salt Lake City · ${localTime()}`;
 }
 
 fetchPrice();
 updateTime();
 spawnMeteor();
 
-setInterval(fetchPrice, 12000);
+setInterval(fetchPrice, 12000);   // 느린 가격 흐름
 setInterval(updateTime, 1000);
 </script>
 
