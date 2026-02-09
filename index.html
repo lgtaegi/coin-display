@@ -2,12 +2,12 @@
 coin-display
 Version: 0.1
 Author: lgtaegi
-Update:
-- Replaced CoinDesk API with Coinbase API (CORS-safe)
-- Price display only
-- No alerts
-- No animations
-- Always centered
+Notes:
+- Base from previous BTC display
+- Alerts removed
+- Top animation removed
+- Display options preserved
+- Centered responsive layout
 -->
 
 <!DOCTYPE html>
@@ -29,7 +29,7 @@ Update:
       height: 100%;
       background: #000;
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
     }
 
     body {
@@ -38,24 +38,42 @@ Update:
       justify-content: center;
     }
 
-    #price {
+    .display {
+      text-align: center;
+    }
+
+    .price {
       font-size: clamp(3rem, 10vw, 8rem);
       font-weight: 700;
       letter-spacing: 0.05em;
-      text-align: center;
-      user-select: none;
+    }
+
+    .currency {
+      margin-top: 8px;
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
+
+    .meta {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      opacity: 0.6;
     }
   </style>
 </head>
 
 <body>
 
-  <div id="price">--</div>
+  <div class="display">
+    <div class="price" id="price">--</div>
+    <div class="currency">BTC / USD</div>
+    <div class="meta" id="updated">Updated: --</div>
+  </div>
 
   <script>
     const priceEl = document.getElementById("price");
+    const updatedEl = document.getElementById("updated");
 
-    // CORS-safe public API
     const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
 
     async function fetchPrice() {
@@ -63,7 +81,9 @@ Update:
         const res = await fetch(API_URL);
         const data = await res.json();
         const price = Math.round(Number(data.data.amount));
+
         priceEl.textContent = `$${price.toLocaleString()}`;
+        updatedEl.textContent = "Updated: " + new Date().toLocaleTimeString();
       } catch (e) {
         priceEl.textContent = "ERROR";
       }
