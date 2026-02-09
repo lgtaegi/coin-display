@@ -2,7 +2,7 @@
 coin-display
 Version: 0.1
 Author: lgtaegi
-Mode: CINEMATIC / TRON NEON
+Mode: CINEMATIC / TRON WIREFRAME
 -->
 
 <!DOCTYPE html>
@@ -39,12 +39,12 @@ body::before {
     radial-gradient(1px 1px at 50% 80%, #6ff, transparent),
     radial-gradient(1px 1px at 70% 60%, #6ff, transparent),
     radial-gradient(1px 1px at 30% 70%, #6ff, transparent);
-  animation: starDrift 80s linear infinite;
+  animation: starDrift 90s linear infinite;
   opacity:0.45;
 }
 
 @keyframes starDrift {
-  to { transform: translateY(200px); }
+  to { transform: translateY(240px); }
 }
 
 /* ===== Layout ===== */
@@ -60,7 +60,7 @@ body {
   text-align:center;
 }
 
-/* ===== Price Core ===== */
+/* ===== Energy Core ===== */
 .energy-field {
   position:relative;
   padding:50px 80px;
@@ -69,30 +69,35 @@ body {
 .energy-field::before {
   content:"";
   position:absolute;
-  inset:-45px;
+  inset:-50px;
   border-radius:50%;
-  border:2px solid rgba(0,255,255,0.35);
-  filter:blur(14px);
-  animation:pulse 5s ease-in-out infinite;
+  border:1px solid rgba(0,255,255,0.35);
+  filter:blur(16px);
+  animation:pulse 6s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%,100% { transform:scale(0.92); opacity:0.4; }
-  50%     { transform:scale(1.08); opacity:1; }
+  0%,100% { transform:scale(0.9); opacity:0.35; }
+  50%     { transform:scale(1.1); opacity:1; }
 }
 
+/* ===== WIREFRAME PRICE ===== */
 .main {
   font-size:clamp(3.5rem,10vw,8.5rem);
   font-weight:800;
-  letter-spacing:0.12em;
+  letter-spacing:0.14em;
+  color:transparent;
+  -webkit-text-stroke: 1.5px rgba(120,255,255,0.9);
+
   text-shadow:
-    0 0 12px rgba(0,255,255,1),
-    0 0 28px rgba(0,255,255,0.9),
-    0 0 60px rgba(0,200,255,0.7),
-    0 0 120px rgba(0,150,255,0.4);
+    0 0 6px rgba(0,255,255,0.9),
+    0 0 14px rgba(0,200,255,0.8),
+    0 0 30px rgba(0,160,255,0.6),
+    2px 2px 0 rgba(0,120,255,0.35),
+    -2px -2px 0 rgba(0,120,255,0.25);
 }
 
-/* ===== Price Ghosts ===== */
+/* ===== SLOW GHOSTS ===== */
 .ghost {
   position:absolute;
   left:50%;
@@ -100,36 +105,39 @@ body {
   transform:translate(-50%,-50%);
   font-size:clamp(3.5rem,10vw,8.5rem);
   font-weight:600;
-  color:rgba(120,255,255,0.8);
+  color:transparent;
+  -webkit-text-stroke: 1px rgba(80,200,255,0.7);
   pointer-events:none;
-  animation: driftBack 10s ease-out forwards;
+  animation: driftBackSlow 18s linear forwards;
+  opacity:0.85;
+
   text-shadow:
-    0 0 20px rgba(0,255,255,0.8),
-    0 0 40px rgba(0,180,255,0.6);
+    0 0 12px rgba(0,200,255,0.7),
+    0 0 30px rgba(0,160,255,0.5);
 }
 
-@keyframes driftBack {
+@keyframes driftBackSlow {
   0% {
     transform:translate(-50%,-50%) scale(1);
-    opacity:0.9;
+    opacity:0.85;
   }
   100% {
-    transform:translate(-50%,-260%) scale(0.25);
+    transform:translate(-50%,-320%) scale(0.22);
     opacity:0;
   }
 }
 
-/* ===== Meteor ===== */
+/* ===== Meteor (유지) ===== */
 .meteor {
   position:fixed;
-  width:360px;
+  width:380px;
   height:4px;
   background:linear-gradient(90deg,
     rgba(255,255,255,0),
-    rgba(0,255,255,0.6),
+    rgba(0,255,255,0.7),
     rgba(0,255,255,1)
   );
-  filter:drop-shadow(0 0 20px cyan);
+  filter:drop-shadow(0 0 28px cyan);
   transform-origin:left center;
   animation: meteorFly 1.6s ease-out forwards;
   z-index:1;
@@ -141,14 +149,14 @@ body {
     opacity:1;
   }
   to {
-    transform:translate(var(--dx), var(--dy)) rotate(var(--angle)) scaleX(1.2);
+    transform:translate(var(--dx), var(--dy)) rotate(var(--angle)) scaleX(1.3);
     opacity:0;
   }
 }
 
 .sub-time {
-  margin-top:18px;
-  font-size:0.95rem;
+  margin-top:20px;
+  font-size:0.9rem;
   opacity:0.7;
 }
 </style>
@@ -186,7 +194,7 @@ function spawnGhost(text) {
   ghost.className = "ghost";
   ghost.textContent = text;
   container.appendChild(ghost);
-  setTimeout(() => ghost.remove(), 10000);
+  setTimeout(() => ghost.remove(), 18000);
 }
 
 function spawnMeteor() {
@@ -207,7 +215,6 @@ function spawnMeteor() {
 
   document.body.appendChild(m);
   setTimeout(() => m.remove(), 1600);
-
   setTimeout(spawnMeteor, 3000 + Math.random() * 5000);
 }
 
@@ -238,7 +245,7 @@ fetchPrice();
 updateTime();
 spawnMeteor();
 
-setInterval(fetchPrice, 12000);   // 느린 가격 흐름
+setInterval(fetchPrice, 12000);
 setInterval(updateTime, 1000);
 </script>
 
