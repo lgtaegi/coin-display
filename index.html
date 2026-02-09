@@ -1,13 +1,13 @@
 <!--
 Project: BTC Core Display
-Version: 1.07
+Version: 1.08
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Toggle button repositioned upward by distance equal to price-button gap
-- Glitch frequency increased significantly (1.5–3s random)
-- Added dynamic electronic motion: data stream + current packets
+- Toggle button moved 20px upward
+- Price & time display shifted 4px upward
+- All effects and logic unchanged
 -->
 
 <!DOCTYPE html>
@@ -70,7 +70,6 @@ html, body {
   opacity:0.45;
 }
 
-/* data stream */
 .electric::before {
   content:"";
   position:absolute;
@@ -86,7 +85,6 @@ html, body {
   opacity:0.25;
 }
 
-/* current packets */
 .electric::after {
   content:"";
   position:absolute;
@@ -98,19 +96,9 @@ html, body {
   opacity:0.35;
 }
 
-@keyframes drift {
-  to { background-position:200px 0; }
-}
-
-@keyframes stream {
-  from { transform:translateX(-100%); }
-  to   { transform:translateX(100%); }
-}
-
-@keyframes packets {
-  from { opacity:0.15; }
-  to   { opacity:0.45; }
-}
+@keyframes drift { to { background-position:200px 0; } }
+@keyframes stream { from { transform:translateX(-100%); } to { transform:translateX(100%); } }
+@keyframes packets { from { opacity:0.15; } to { opacity:0.45; } }
 
 /* ================= DISPLAY ================= */
 .display {
@@ -145,9 +133,7 @@ svg { width:100%; height:100%; }
 }
 
 /* ===== TIME MODE ===== */
-.time-mode svg text {
-  font-size:100px;
-}
+.time-mode svg text { font-size:100px; }
 
 /* ================= GLITCH ================= */
 .glitch svg {
@@ -158,10 +144,10 @@ svg { width:100%; height:100%; }
 .glitch .wire.inner { opacity:0.08; }
 
 @keyframes glitch {
-  0%   { transform:translate(0,0); }
-  20%  { transform:translate(-4px,1px); }
-  40%  { transform:translate(4px,-1px); }
-  60%  { transform:translate(-2px,0); }
+  0% { transform:translate(0,0); }
+  20% { transform:translate(-4px,1px); }
+  40% { transform:translate(4px,-1px); }
+  60% { transform:translate(-2px,0); }
   100% { transform:translate(0,0); }
 }
 
@@ -169,8 +155,8 @@ svg { width:100%; height:100%; }
 .toggle {
   position:absolute;
 
-  /* ⬆ 가격과 동일한 거리만큼 위 */
-  top:-50%;
+  /* ⬆ 기존 위치에서 20px 추가 상승 */
+  top:calc(-50% - 20px);
   left:50%;
   transform:translate(-50%, -50%);
 
@@ -210,11 +196,12 @@ svg { width:100%; height:100%; }
 
     <div class="display" id="display">
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-        <text id="textMain"  x="50%" y="59%" text-anchor="middle"
+        <!-- ⬆ 숫자 4px 위: y 59% → 57% -->
+        <text id="textMain"  x="50%" y="57%" text-anchor="middle"
               font-size="140" class="wire">----</text>
-        <text id="textAlt"   x="50%" y="59%" text-anchor="middle"
+        <text id="textAlt"   x="50%" y="57%" text-anchor="middle"
               font-size="140" class="wire alt">----</text>
-        <text id="textInner" x="50%" y="59%" text-anchor="middle"
+        <text id="textInner" x="50%" y="57%" text-anchor="middle"
               font-size="140" class="wire inner">----</text>
       </svg>
 
@@ -224,9 +211,9 @@ svg { width:100%; height:100%; }
 </div>
 
 <script>
-const main   = textMain;
-const alt    = textAlt;
-const inner  = textInner;
+const main = textMain;
+const alt = textAlt;
+const inner = textInner;
 const toggle = document.getElementById("toggle");
 const display = document.getElementById("display");
 
@@ -269,7 +256,6 @@ toggle.onclick = () => {
   if(mode==="price") setText(lastPrice);
 };
 
-/* ===== GLITCH LOOP (MORE FREQUENT) ===== */
 function glitchLoop(){
   display.classList.add("glitch");
   setTimeout(()=>display.classList.remove("glitch"), 140);
