@@ -1,14 +1,14 @@
 <!--
 Project: BTC Core Display
-Version: 1.40-full-noise-engine
+Version: 1.50-background-motion
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Integrated Full Noise Engine (CRT scanline + flicker + analog static)
-- Added RGB split, wave distortion, glitch burst, random interference
-- Improved cyberpunk HUD clarity and realism
-- Stabilized glitch timing and display transitions
+- Added TRUE background motion layer behind numbers
+- Added analog static, wave distortion, tear glitch, brightness pulse
+- Display background now visibly moves like a real CRT monitor
+- Effects tuned to be clearly visible even with SVG text overlay
 -->
 
 <!DOCTYPE html>
@@ -88,6 +88,77 @@ html, body {
   overflow:hidden;
 }
 
+/* ============================================================
+   TRUE BACKGROUND MOTION LAYER (숫자 뒤에서 실제로 움직이는 레이어)
+   ============================================================ */
+.bg-motion {
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background:black;
+  overflow:hidden;
+}
+
+/* 1) 강한 아날로그 노이즈 */
+.bg-noise {
+  position:absolute;
+  inset:0;
+  background:url("https://i.imgur.com/8QfQ7Qv.gif") center/cover;
+  opacity:0.22;
+  mix-blend-mode:screen;
+  animation:noiseShift 0.25s steps(2) infinite;
+}
+@keyframes noiseShift {
+  0% { transform:translate(0,0); }
+  100% { transform:translate(-3px,2px); }
+}
+
+/* 2) 전파 간섭 웨이브 */
+.bg-wave {
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,0.03);
+  mix-blend-mode:overlay;
+  animation:waveMove 4s ease-in-out infinite;
+}
+@keyframes waveMove {
+  0% { transform:skewX(0deg); }
+  50% { transform:skewX(3deg); }
+  100% { transform:skewX(0deg); }
+}
+
+/* 3) 찢김(tear glitch) */
+.bg-tear {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255,255,255,0.08) 50%,
+    transparent 100%
+  );
+  mix-blend-mode:screen;
+  animation:tearMove 1.8s infinite;
+}
+@keyframes tearMove {
+  0% { transform:translateY(-20%); }
+  100% { transform:translateY(120%); }
+}
+
+/* 4) 밝기 펄스 */
+.bg-bright {
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,0.05);
+  mix-blend-mode:overlay;
+  animation:brightPulse 3s ease-in-out infinite;
+}
+@keyframes brightPulse {
+  0% { opacity:0.0; }
+  50% { opacity:0.15; }
+  100% { opacity:0.0; }
+}
+
 /* ================= SCANLINES ================= */
 .display::before {
   content:"";
@@ -104,34 +175,9 @@ html, body {
   opacity:0.3;
   animation:scanline 6s linear infinite;
 }
-
 @keyframes scanline {
   from { transform:translateY(-20%); }
   to   { transform:translateY(20%); }
-}
-
-/* ================= ANALOG STATIC NOISE ================= */
-.display::after {
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(255,255,255,0.03) 0px,
-      rgba(255,255,255,0.03) 1px,
-      transparent 2px,
-      transparent 4px
-    );
-  mix-blend-mode:screen;
-  animation:noiseMove 0.2s steps(2) infinite;
-}
-
-@keyframes noiseMove {
-  0% { transform:translate(0,0); opacity:0.25; }
-  50% { transform:translate(-2px,1px); opacity:0.35; }
-  100% { transform:translate(1px,-1px); opacity:0.25; }
 }
 
 /* ================= SVG ================= */
@@ -139,7 +185,7 @@ svg {
   width:100%;
   height:100%;
   position:relative;
-  z-index:2;
+  z-index:5;
 }
 
 /* ================= WIREFRAME TEXT ================= */
@@ -167,47 +213,6 @@ svg {
   font-size:100px;
   transform: translateY(-24px);
 }
-
-/* ================= BASE GLITCH ================= */
-.glitch svg {
-  animation:glitch 0.12s steps(2) infinite;
-}
-
-@keyframes glitch {
-  25% { transform:translate(-3px,1px); }
-  50% { transform:translate(3px,-1px); }
-}
-
-/* ================= RGB SPLIT ================= */
-.rgb-split {
-  filter:
-    drop-shadow(2px 0px 0px rgba(255,0,0,0.4))
-    drop-shadow(-2px 0px 0px rgba(0,150,255,0.4));
-}
-
-/* ================= WAVE DISTORT ================= */
-.wave {
-  animation:waveDistort 3.5s ease-in-out infinite;
-}
-
-@keyframes waveDistort {
-  0% { transform:skewX(0deg); }
-  25% { transform:skewX(1.5deg); }
-  50% { transform:skewX(0deg); }
-  75% { transform:skewX(-1.5deg); }
-  100% { transform:skewX(0deg); }
-}
-
-/* ================= GLITCH BURST ================= */
-.glitch-burst {
-  animation:burst 0.12s steps(2) 1;
-}
-
-@keyframes burst {
-  0% { transform:translate(0,0); filter:brightness(1.2); }
-  50% { transform:translate(-6px,3px); filter:brightness(2); }
-  100% { transform:translate(4px,-2px); filter:brightness(1.2); }
-}
 </style>
 </head>
 
@@ -221,6 +226,16 @@ svg {
   <!-- DISPLAY -->
   <div class="screen">
     <div class="display" id="display">
+
+      <!-- ⭐ 숫자 뒤에서 실제로 움직이는 배경 레이어 -->
+      <div class="bg-motion">
+        <div class="bg-noise"></div>
+        <div class="bg-wave"></div>
+        <div class="bg-tear"></div>
+        <div class="bg-bright"></div>
+      </div>
+
+      <!-- 숫자 -->
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
         <text x="50%" y="84%" text-anchor="middle"
               font-size="175" class="wire" id="t1">----</text>
@@ -229,6 +244,7 @@ svg {
         <text x="50%" y="84%" text-anchor="middle"
               font-size="175" class="wire inner" id="t3">----</text>
       </svg>
+
     </div>
   </div>
 
@@ -278,26 +294,7 @@ toggle.onclick = () => {
   if(mode === "price") setText(last);
 };
 
-/* ================= FULL GLITCH LOOP ================= */
-function glitchLoop(){
-  display.classList.add("glitch");
-  display.classList.add("rgb-split");
-  display.classList.add("wave");
-
-  if(Math.random() < 0.35){
-    display.classList.add("glitch-burst");
-    setTimeout(() => display.classList.remove("glitch-burst"), 140);
-  }
-
-  setTimeout(() => display.classList.remove("glitch"), 120);
-  setTimeout(() => display.classList.remove("rgb-split"), 200);
-  setTimeout(() => display.classList.remove("wave"), 350);
-
-  setTimeout(glitchLoop, 900 + Math.random() * 1200);
-}
-
 updatePrice();
-glitchLoop();
 setInterval(updatePrice, 12000);
 setInterval(updateTime, 1000);
 </script>
