@@ -1,3 +1,16 @@
+<!--
+Project: BTC Core Display
+Version: 1.02
+Date: 2026-02-09
+Author: lgtaegi
+
+Updates:
+- Added intermittent glitch / noise effect to price & time display
+- Glitch occurs at random intervals with short duration
+- Maintains readability while enhancing electronic realism
+- Keeps all previous mechanical + electric effects intact
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
+/* ================= RESET ================= */
 * {
   margin: 0;
   padding: 0;
@@ -20,9 +34,10 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  font-family: monospace;
 }
 
-/* ===== MACHINE ===== */
+/* ================= MACHINE ================= */
 .machine {
   position: relative;
   width: min(92vw, 900px);
@@ -30,7 +45,7 @@ html, body {
   background: url("machine-bg.png") center / contain no-repeat;
 }
 
-/* ===== SCREEN ===== */
+/* ================= MAIN SCREEN ================= */
 .screen {
   position: absolute;
   left: 50%;
@@ -44,7 +59,7 @@ html, body {
   justify-content: center;
 }
 
-/* ===== ELECTRIC BACKGROUND ===== */
+/* ================= ELECTRIC BACKGROUND ================= */
 .electric {
   position: absolute;
   inset: 0;
@@ -52,8 +67,8 @@ html, body {
   background:
     repeating-linear-gradient(
       90deg,
-      rgba(0,255,255,0.1) 0px,
-      rgba(0,255,255,0.1) 1px,
+      rgba(0,255,255,0.10) 0px,
+      rgba(0,255,255,0.10) 1px,
       transparent 1px,
       transparent 14px
     ),
@@ -68,24 +83,44 @@ html, body {
   opacity: 0.35;
 }
 
+.electric::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0,255,255,0.12) 50%,
+    transparent 100%
+  );
+  animation: scanLine 6s ease-in-out infinite;
+  opacity: 0.35;
+}
+
 @keyframes electricMove {
   to {
     background-position: 300px 150px, -150px 300px;
   }
 }
 
-/* ===== SVG DISPLAY ===== */
+@keyframes scanLine {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(100%); }
+}
+
+/* ================= DISPLAY (SVG) ================= */
 .display {
   width: 100%;
   height: 70%;
+  position: relative;
 }
 
+/* ================= WIREFRAME NUMBERS ================= */
 svg {
   width: 100%;
   height: 100%;
 }
 
-/* ===== WIRE TEXT ===== */
 .wire {
   fill: none;
   stroke: #9ffcff;
@@ -95,14 +130,12 @@ svg {
   filter: drop-shadow(0 0 6px rgba(0,255,255,0.7));
 }
 
-/* secondary wire */
 .wire.alt {
   stroke: rgba(120,255,255,0.6);
   stroke-width: 1.2;
   stroke-dasharray: 6 4;
 }
 
-/* tertiary inner structure */
 .wire.inner {
   stroke: rgba(0,200,255,0.5);
   stroke-width: 0.8;
@@ -111,16 +144,59 @@ svg {
 
 /* ===== TIME MODE ===== */
 .time-mode .wire {
-  stroke-width: 1.6;
+  stroke-width: 1.4;
 }
 
-/* ===== TOGGLE ===== */
+/* ================= GLITCH EFFECT ================= */
+.glitch svg {
+  animation: glitchShift 0.12s linear infinite;
+}
+
+.glitch .wire.alt {
+  opacity: 0.2;
+}
+
+.glitch .wire.inner {
+  opacity: 0.1;
+}
+
+@keyframes glitchShift {
+  0%   { transform: translateX(0); }
+  30%  { transform: translateX(-3px); }
+  60%  { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+/* ================= TOGGLE BUTTON ================= */
 .toggle {
-  margin-top: 8px;
+  position: absolute;
+  right: 8%;
+  bottom: -18%;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1rem;
   color: rgba(180,245,255,0.9);
+  border: 1px solid rgba(120,220,255,0.6);
+  background: radial-gradient(
+    circle at center,
+    rgba(0,255,255,0.15),
+    rgba(0,120,255,0.05)
+  );
   cursor: pointer;
   user-select: none;
+  box-shadow:
+    0 0 8px rgba(0,255,255,0.6),
+    inset 0 0 6px rgba(0,255,255,0.4);
+}
+
+.toggle:hover {
+  box-shadow:
+    0 0 12px rgba(0,255,255,0.9),
+    inset 0 0 8px rgba(0,255,255,0.6);
 }
 </style>
 </head>
@@ -133,28 +209,23 @@ svg {
 
     <div class="display" id="display">
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-        <text id="textMain" x="50%" y="60%" text-anchor="middle"
-              font-size="140" font-family="monospace"
-              class="wire">----</text>
-
-        <text id="textAlt" x="50%" y="60%" text-anchor="middle"
-              font-size="140" font-family="monospace"
-              class="wire alt">----</text>
-
+        <text id="textMain"  x="50%" y="60%" text-anchor="middle"
+              font-size="140" class="wire">----</text>
+        <text id="textAlt"   x="50%" y="60%" text-anchor="middle"
+              font-size="140" class="wire alt">----</text>
         <text id="textInner" x="50%" y="60%" text-anchor="middle"
-              font-size="140" font-family="monospace"
-              class="wire inner">----</text>
+              font-size="140" class="wire inner">----</text>
       </svg>
-    </div>
 
-    <div class="toggle" id="toggle">⟲</div>
+      <div class="toggle" id="toggle">⟲</div>
+    </div>
   </div>
 </div>
 
 <script>
-const main = document.getElementById("textMain");
-const alt = document.getElementById("textAlt");
-const inner = document.getElementById("textInner");
+const main   = document.getElementById("textMain");
+const alt    = document.getElementById("textAlt");
+const inner  = document.getElementById("textInner");
 const toggle = document.getElementById("toggle");
 const display = document.getElementById("display");
 
@@ -165,11 +236,12 @@ let mode = "price";
 let lastPrice = "----";
 
 function setText(val) {
-  main.textContent = val;
-  alt.textContent = val;
+  main.textContent  = val;
+  alt.textContent   = val;
   inner.textContent = val;
 }
 
+/* ===== PRICE UPDATE ===== */
 async function updatePrice() {
   try {
     const res = await fetch(API_URL);
@@ -181,6 +253,7 @@ async function updatePrice() {
   }
 }
 
+/* ===== TIME UPDATE ===== */
 function updateTime() {
   if (mode !== "time") return;
 
@@ -195,6 +268,7 @@ function updateTime() {
   setText(time);
 }
 
+/* ===== TOGGLE MODE ===== */
 toggle.addEventListener("click", () => {
   mode = mode === "price" ? "time" : "price";
 
@@ -206,7 +280,18 @@ toggle.addEventListener("click", () => {
   }
 });
 
+/* ===== GLITCH RANDOMIZER ===== */
+function triggerGlitch() {
+  display.classList.add("glitch");
+  setTimeout(() => display.classList.remove("glitch"), 120);
+
+  const next = 6000 + Math.random() * 8000;
+  setTimeout(triggerGlitch, next);
+}
+
 updatePrice();
+triggerGlitch();
+
 setInterval(updatePrice, 12000);
 setInterval(updateTime, 1000);
 </script>
