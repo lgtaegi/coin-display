@@ -1,12 +1,11 @@
 <!--
 Project: BTC Core Display
-Version: 1.13
+Version: 1.14
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Toggle button moved to center of circular display
-- Confirmed single background image rendering only
+- Toggle button moved to upper circular display (machine-based positioning)
 -->
 
 <!DOCTYPE html>
@@ -30,7 +29,7 @@ html, body {
   font-family:monospace;
 }
 
-/* ================= MACHINE (SINGLE IMAGE) ================= */
+/* ================= MACHINE ================= */
 .machine {
   position:relative;
   width:min(92vw, 900px);
@@ -38,7 +37,43 @@ html, body {
   background:url("machine-bg.png") center/contain no-repeat;
 }
 
-/* ================= SCREEN ================= */
+/* ================= UPPER CIRCULAR TOGGLE ================= */
+.toggle {
+  position:absolute;
+
+  /* 🎯 upper circular display center (tuned for your image) */
+  left:50%;
+  top:27%;
+
+  transform:translate(-50%, -50%);
+
+  width:38px;
+  height:38px;
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:1.05rem;
+  color:white;
+
+  border:1px solid rgba(180,240,255,0.9);
+  background:radial-gradient(
+    circle,
+    rgba(0,255,255,0.35),
+    rgba(0,120,255,0.05)
+  );
+
+  cursor:pointer;
+  user-select:none;
+
+  box-shadow:
+    0 0 18px rgba(0,255,255,1),
+    inset 0 0 12px rgba(0,255,255,0.7);
+}
+
+/* ================= SCREEN (PRICE DISPLAY) ================= */
 .screen {
   position:absolute;
   left:50%;
@@ -74,7 +109,7 @@ html, body {
   opacity:0.18;
 }
 
-/* ================= FLOATING DOTS ================= */
+/* ================= PARTICLES ================= */
 .particles {
   position:absolute;
   inset:0;
@@ -131,9 +166,7 @@ svg { width:100%; height:100%; }
 }
 
 /* ===== TIME MODE ===== */
-.time-mode svg text {
-  font-size:100px;
-}
+.time-mode svg text { font-size:100px; }
 
 /* ================= GLITCH ================= */
 .glitch svg {
@@ -147,47 +180,17 @@ svg { width:100%; height:100%; }
   75% { transform:translate(-2px,0); }
   100% { transform:translate(0,0); }
 }
-
-/* ================= TOGGLE BUTTON (CENTERED) ================= */
-.toggle {
-  position:absolute;
-
-  /* 🎯 circular display center */
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%);
-
-  width:38px;
-  height:38px;
-  border-radius:50%;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  font-size:1.05rem;
-  color:white;
-
-  border:1px solid rgba(180,240,255,0.9);
-  background:radial-gradient(
-    circle,
-    rgba(0,255,255,0.35),
-    rgba(0,120,255,0.05)
-  );
-
-  cursor:pointer;
-  user-select:none;
-
-  box-shadow:
-    0 0 18px rgba(0,255,255,1),
-    inset 0 0 12px rgba(0,255,255,0.7);
-}
 </style>
 </head>
 
 <body>
 
 <div class="machine">
+
+  <!-- 🔘 TOGGLE BUTTON (UPPER CIRCLE) -->
+  <div class="toggle" id="toggle">⟲</div>
+
+  <!-- PRICE DISPLAY -->
   <div class="screen">
     <div class="electric"></div>
     <div class="particles" id="particles"></div>
@@ -201,8 +204,6 @@ svg { width:100%; height:100%; }
         <text id="textInner" x="50%" y="57%" text-anchor="middle"
               font-size="140" class="wire inner">----</text>
       </svg>
-
-      <div class="toggle" id="toggle">⟲</div>
     </div>
   </div>
 </div>
@@ -221,7 +222,7 @@ const TIMEZONE = "America/Denver";
 let mode = "price";
 let lastPrice = "----";
 
-/* floating dots */
+/* particles */
 for(let i=0;i<28;i++){
   const p=document.createElement("div");
   p.className="particle";
@@ -274,7 +275,6 @@ function glitchLoop(){
 
 updatePrice();
 glitchLoop();
-
 setInterval(updatePrice,12000);
 setInterval(updateTime,1000);
 </script>
