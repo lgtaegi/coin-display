@@ -1,11 +1,11 @@
 <!--
 Project: BTC Core Display
-Version: 1.14
+Version: 1.15
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Toggle button moved to upper circular display (machine-based positioning)
+- Toggle button moved upward by 100px (relative to upper circular display center)
 -->
 
 <!DOCTYPE html>
@@ -37,14 +37,13 @@ html, body {
   background:url("machine-bg.png") center/contain no-repeat;
 }
 
-/* ================= UPPER CIRCULAR TOGGLE ================= */
+/* ================= TOGGLE (UPPER AREA) ================= */
 .toggle {
   position:absolute;
 
-  /* 🎯 upper circular display center (tuned for your image) */
+  /* ⬆ moved up by 100px */
   left:50%;
-  top:27%;
-
+  top:calc(27% - 100px);
   transform:translate(-50%, -50%);
 
   width:38px;
@@ -73,7 +72,7 @@ html, body {
     inset 0 0 12px rgba(0,255,255,0.7);
 }
 
-/* ================= SCREEN (PRICE DISPLAY) ================= */
+/* ================= SCREEN ================= */
 .screen {
   position:absolute;
   left:50%;
@@ -140,7 +139,6 @@ html, body {
   position:relative;
 }
 
-/* ================= SVG ================= */
 svg { width:100%; height:100%; }
 
 /* ================= WIREFRAME TEXT ================= */
@@ -187,7 +185,7 @@ svg { width:100%; height:100%; }
 
 <div class="machine">
 
-  <!-- 🔘 TOGGLE BUTTON (UPPER CIRCLE) -->
+  <!-- 🔘 TOGGLE BUTTON -->
   <div class="toggle" id="toggle">⟲</div>
 
   <!-- PRICE DISPLAY -->
