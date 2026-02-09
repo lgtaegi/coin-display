@@ -1,14 +1,13 @@
 <!--
 Project: BTC Core Display
-Version: 1.02
+Version: 1.04
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Added intermittent glitch / noise effect to price & time display
-- Glitch occurs at random intervals with short duration
-- Maintains readability while enhancing electronic realism
-- Keeps all previous mechanical + electric effects intact
+- Reduced time-mode numeric size further to ensure full containment
+- Improved visual balance between price and time modes
+- No structural or behavioral changes
 -->
 
 <!DOCTYPE html>
@@ -108,19 +107,20 @@ html, body {
   to   { transform: translateY(100%); }
 }
 
-/* ================= DISPLAY (SVG) ================= */
+/* ================= DISPLAY ================= */
 .display {
   width: 100%;
   height: 70%;
   position: relative;
 }
 
-/* ================= WIREFRAME NUMBERS ================= */
+/* ================= SVG ================= */
 svg {
   width: 100%;
   height: 100%;
 }
 
+/* ================= WIREFRAME TEXT ================= */
 .wire {
   fill: none;
   stroke: #9ffcff;
@@ -142,22 +142,14 @@ svg {
   stroke-dasharray: 2 6;
 }
 
-/* ===== TIME MODE ===== */
-.time-mode .wire {
-  stroke-width: 1.4;
+/* ===== TIME MODE (MORE REDUCED) ===== */
+.time-mode svg text {
+  font-size: 100px;   /* ⬅ 더 줄인 핵심 포인트 */
 }
 
-/* ================= GLITCH EFFECT ================= */
+/* ================= GLITCH ================= */
 .glitch svg {
   animation: glitchShift 0.12s linear infinite;
-}
-
-.glitch .wire.alt {
-  opacity: 0.2;
-}
-
-.glitch .wire.inner {
-  opacity: 0.1;
 }
 
 @keyframes glitchShift {
@@ -171,14 +163,14 @@ svg {
 .toggle {
   position: absolute;
   right: 8%;
-  bottom: -18%;
-  width: 36px;
-  height: 36px;
+  bottom: -6%;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: rgba(180,245,255,0.9);
   border: 1px solid rgba(120,220,255,0.6);
   background: radial-gradient(
@@ -189,14 +181,14 @@ svg {
   cursor: pointer;
   user-select: none;
   box-shadow:
-    0 0 8px rgba(0,255,255,0.6),
-    inset 0 0 6px rgba(0,255,255,0.4);
+    0 0 6px rgba(0,255,255,0.5),
+    inset 0 0 5px rgba(0,255,255,0.35);
 }
 
 .toggle:hover {
   box-shadow:
-    0 0 12px rgba(0,255,255,0.9),
-    inset 0 0 8px rgba(0,255,255,0.6);
+    0 0 10px rgba(0,255,255,0.8),
+    inset 0 0 7px rgba(0,255,255,0.55);
 }
 </style>
 </head>
@@ -241,7 +233,6 @@ function setText(val) {
   inner.textContent = val;
 }
 
-/* ===== PRICE UPDATE ===== */
 async function updatePrice() {
   try {
     const res = await fetch(API_URL);
@@ -253,7 +244,6 @@ async function updatePrice() {
   }
 }
 
-/* ===== TIME UPDATE ===== */
 function updateTime() {
   if (mode !== "time") return;
 
@@ -268,7 +258,6 @@ function updateTime() {
   setText(time);
 }
 
-/* ===== TOGGLE MODE ===== */
 toggle.addEventListener("click", () => {
   mode = mode === "price" ? "time" : "price";
 
@@ -280,13 +269,11 @@ toggle.addEventListener("click", () => {
   }
 });
 
-/* ===== GLITCH RANDOMIZER ===== */
+/* ===== GLITCH RANDOM ===== */
 function triggerGlitch() {
   display.classList.add("glitch");
   setTimeout(() => display.classList.remove("glitch"), 120);
-
-  const next = 6000 + Math.random() * 8000;
-  setTimeout(triggerGlitch, next);
+  setTimeout(triggerGlitch, 6000 + Math.random() * 8000);
 }
 
 updatePrice();
