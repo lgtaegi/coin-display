@@ -2,12 +2,12 @@
 coin-display
 Version: 0.1
 Author: lgtaegi
-Notes:
-- Initial clean version
+Update:
+- Replaced CoinDesk API with Coinbase API (CORS-safe)
 - Price display only
 - No alerts
 - No animations
-- Centered display responsive to browser size
+- Always centered
 -->
 
 <!DOCTYPE html>
@@ -18,7 +18,6 @@ Notes:
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    /* ===== Base Reset ===== */
     * {
       margin: 0;
       padding: 0;
@@ -33,14 +32,12 @@ Notes:
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen;
     }
 
-    /* ===== Center Layout ===== */
     body {
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* ===== Price Display ===== */
     #price {
       font-size: clamp(3rem, 10vw, 8rem);
       font-weight: 700;
@@ -56,28 +53,24 @@ Notes:
   <div id="price">--</div>
 
   <script>
-    /*
-      coin-display v0.1
-      - BTC price fetch
-      - Display only
-    */
-
     const priceEl = document.getElementById("price");
-    const API_URL = "https://api.coindesk.com/v1/bpi/currentprice/USD.json";
+
+    // CORS-safe public API
+    const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
 
     async function fetchPrice() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
-        const price = Math.round(data.bpi.USD.rate_float);
+        const price = Math.round(Number(data.data.amount));
         priceEl.textContent = `$${price.toLocaleString()}`;
-      } catch (err) {
+      } catch (e) {
         priceEl.textContent = "ERROR";
       }
     }
 
     fetchPrice();
-    setInterval(fetchPrice, 10000); // 10초마다 갱신
+    setInterval(fetchPrice, 10000);
   </script>
 
 </body>
