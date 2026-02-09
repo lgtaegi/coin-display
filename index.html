@@ -5,8 +5,9 @@ Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Restored floating particle motion inside display
-- Center alignment, toggle position, time offset unchanged
+- Added price-change electric scan transition
+- Added large slow-moving background core elements
+- Center alignment and timing unchanged
 -->
 
 <!DOCTYPE html>
@@ -17,13 +18,10 @@ Updates:
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-/* ================= EASY CONTROL ================= */
 :root {
-  /* 🔧 전환 버튼 위/아래 위치 여기만 조절 */
   --toggle-offset-y: 12px;
 }
 
-/* ================= RESET ================= */
 * { margin:0; padding:0; box-sizing:border-box; }
 
 html, body {
@@ -61,17 +59,9 @@ html, body {
   color:white;
   cursor:pointer;
   user-select:none;
-
   border:1px solid rgba(180,240,255,0.9);
-  background:radial-gradient(
-    circle,
-    rgba(0,255,255,0.35),
-    rgba(0,120,255,0.05)
-  );
-
-  box-shadow:
-    0 0 18px rgba(0,255,255,1),
-    inset 0 0 12px rgba(0,255,255,0.7);
+  background:radial-gradient(circle, rgba(0,255,255,0.35), rgba(0,120,255,0.05));
+  box-shadow:0 0 18px rgba(0,255,255,1), inset 0 0 12px rgba(0,255,255,0.7);
 }
 
 /* ================= SCREEN ================= */
@@ -82,6 +72,23 @@ html, body {
   transform:translate(-50%, -44%);
   width:70%;
   height:22%;
+  position:relative;
+}
+
+/* ================= BACKGROUND CORE ================= */
+.core {
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(0,255,255,0.12), transparent 40%),
+    radial-gradient(circle at 70% 60%, rgba(120,255,255,0.08), transparent 45%);
+  animation:coreMove 22s linear infinite;
+  z-index:0;
+}
+
+@keyframes coreMove {
+  from { transform:translate(0,0) rotate(0deg); }
+  to   { transform:translate(-4%,3%) rotate(360deg); }
 }
 
 /* ================= PARTICLES ================= */
@@ -89,7 +96,7 @@ html, body {
   position:absolute;
   inset:0;
   pointer-events:none;
-  z-index:1; /* 숫자 뒤 */
+  z-index:1;
 }
 
 .particle {
@@ -104,14 +111,8 @@ html, body {
 }
 
 @keyframes floatParticle {
-  from {
-    transform:translate(0,0);
-    opacity:0.3;
-  }
-  to {
-    transform:translate(var(--dx), var(--dy));
-    opacity:0.9;
-  }
+  from { transform:translate(0,0); opacity:0.3; }
+  to   { transform:translate(var(--dx), var(--dy)); opacity:0.9; }
 }
 
 /* ================= DISPLAY ================= */
@@ -122,7 +123,38 @@ html, body {
   overflow:hidden;
 }
 
-/* ================= MONITOR NOISE ================= */
+/* ================= ELECTRIC SCAN ================= */
+.scan {
+  position:absolute;
+  left:0;
+  top:50%;
+  width:100%;
+  height:3px;
+  background:linear-gradient(
+    to right,
+    transparent,
+    rgba(255,255,255,0.9),
+    rgba(0,255,255,1),
+    rgba(255,255,255,0.9),
+    transparent
+  );
+  box-shadow:0 0 18px rgba(0,255,255,1);
+  transform:translateY(-50%) scaleX(0);
+  opacity:0;
+  z-index:3;
+}
+
+.scan.active {
+  animation:scanFlash 0.18s ease-out;
+}
+
+@keyframes scanFlash {
+  0%   { transform:translateY(-50%) scaleX(0); opacity:1; }
+  50%  { transform:translateY(-50%) scaleX(1); opacity:1; }
+  100% { transform:translateY(-50%) scaleX(1); opacity:0; }
+}
+
+/* ================= NOISE ================= */
 .display::before {
   content:"";
   position:absolute;
@@ -164,10 +196,10 @@ svg {
   width:100%;
   height:100%;
   position:relative;
-  z-index:2;
+  z-index:4;
 }
 
-/* ================= WIREFRAME TEXT ================= */
+/* ================= TEXT ================= */
 .wire {
   fill:none;
   stroke:#9ffcff;
@@ -176,21 +208,12 @@ svg {
   stroke-linejoin:round;
   filter:drop-shadow(0 0 6px rgba(0,255,255,0.7));
 }
+.wire.alt { stroke-width:1.2; stroke-dasharray:6 4; }
+.wire.inner { stroke-width:0.9; stroke-dasharray:2 6; }
 
-.wire.alt {
-  stroke-width:1.2;
-  stroke-dasharray:6 4;
-}
-
-.wire.inner {
-  stroke-width:0.9;
-  stroke-dasharray:2 6;
-}
-
-/* ================= TIME MODE ================= */
 .time-mode svg text {
   font-size:100px;
-  transform: translateY(-24px);
+  transform:translateY(-24px);
 }
 
 /* ================= GLITCH ================= */
@@ -208,27 +231,21 @@ svg {
 <body>
 
 <div class="machine">
-
-  <!-- 🔘 TIME / PRICE TOGGLE -->
   <div class="toggle" id="toggle">⟲</div>
 
-  <!-- DISPLAY -->
   <div class="screen">
-    <!-- ✨ floating particles -->
+    <div class="core"></div>
     <div class="particles" id="particles"></div>
 
     <div class="display" id="display">
+      <div class="scan" id="scan"></div>
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-        <text x="50%" y="84%" text-anchor="middle"
-              font-size="175" class="wire" id="t1">----</text>
-        <text x="50%" y="84%" text-anchor="middle"
-              font-size="175" class="wire alt" id="t2">----</text>
-        <text x="50%" y="84%" text-anchor="middle"
-              font-size="175" class="wire inner" id="t3">----</text>
+        <text x="50%" y="84%" text-anchor="middle" font-size="175" class="wire" id="t1">----</text>
+        <text x="50%" y="84%" text-anchor="middle" font-size="175" class="wire alt" id="t2">----</text>
+        <text x="50%" y="84%" text-anchor="middle" font-size="175" class="wire inner" id="t3">----</text>
       </svg>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -236,6 +253,7 @@ const texts = document.querySelectorAll("svg text");
 const display = document.getElementById("display");
 const toggle = document.getElementById("toggle");
 const particles = document.getElementById("particles");
+const scan = document.getElementById("scan");
 
 const API = "https://api.coinbase.com/v2/prices/spot?currency=USD";
 const TZ = "America/Denver";
@@ -243,7 +261,7 @@ const TZ = "America/Denver";
 let mode = "price";
 let last = "----";
 
-/* ===== particles init ===== */
+/* particles */
 for (let i = 0; i < 28; i++) {
   const p = document.createElement("div");
   p.className = "particle";
@@ -263,8 +281,18 @@ async function updatePrice(){
   try{
     const r = await fetch(API);
     const d = await r.json();
-    last = String(Math.round(d.data.amount));
-    if (mode === "price") setText(last);
+    const next = String(Math.round(d.data.amount));
+
+    if (next !== last && mode === "price") {
+      setText("");
+      scan.classList.add("active");
+      setTimeout(() => {
+        setText(next);
+        scan.classList.remove("active");
+      }, 120);
+    }
+
+    last = next;
   } catch {
     setText("ERROR");
   }
@@ -274,10 +302,8 @@ function updateTime(){
   if (mode !== "time") return;
   const t = new Intl.DateTimeFormat("en-US", {
     timeZone: TZ,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
+    hour:"2-digit", minute:"2-digit", second:"2-digit",
+    hour12:true
   }).format(new Date());
   setText(t);
 }
@@ -291,7 +317,7 @@ toggle.onclick = () => {
 function glitchLoop(){
   display.classList.add("glitch");
   setTimeout(() => display.classList.remove("glitch"), 120);
-  setTimeout(glitchLoop,2000 + Math.random() * 2000);
+  setTimeout(glitchLoop, 2000 + Math.random() * 2000);
 }
 
 updatePrice();
