@@ -5,9 +5,9 @@ Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Added full-screen rotating ring light aligned with toggle center
-- Ring acts as background machine light (360° rotation)
-- No changes to display, particles, scan, or text
+- Reduced rotating ring light size to ~4x toggle button
+- Ring now acts as focused mechanical indicator (not full overlay)
+- All other visuals unchanged
 -->
 
 <!DOCTYPE html>
@@ -18,9 +18,7 @@ Updates:
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-:root {
-  --toggle-offset-y: 12px;
-}
+:root { --toggle-offset-y: 12px; }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -48,8 +46,8 @@ html, body {
   position:absolute;
   left:50%;
   top:calc(27% + var(--toggle-offset-y));
-  width:120%;
-  height:120%;
+  width:160px;
+  height:160px;
   transform:translate(-50%, -50%);
   pointer-events:none;
   z-index:0;
@@ -65,14 +63,14 @@ html, body {
     );
 
   mask-image:radial-gradient(circle at center,
-    transparent 48%,
-    black 52%,
-    black 56%,
-    transparent 60%
+    transparent 46%,
+    black 50%,
+    black 54%,
+    transparent 58%
   );
 
   animation:ringRotate 18s linear infinite;
-  filter:blur(1px);
+  filter:blur(0.8px);
 }
 
 @keyframes ringRotate {
@@ -152,9 +150,9 @@ html, body {
 /* ================= PRICE SCAN LINE ================= */
 .scan {
   position:absolute;
-  left:25%;
+  left:18.75%;
   top:50%;
-  width:50%;
+  width:62.5%;
   height:3px;
   transform:translateY(-50%) scaleX(0);
   opacity:0;
@@ -257,14 +255,9 @@ svg {
 <body>
 
 <div class="machine">
-
-  <!-- 🔵 rotating machine light -->
   <div class="ring-light"></div>
-
-  <!-- 🔘 toggle -->
   <div class="toggle" id="toggle">⟲</div>
 
-  <!-- display -->
   <div class="screen">
     <div class="particles" id="particles"></div>
     <div class="display" id="display">
@@ -276,7 +269,6 @@ svg {
       </svg>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -304,9 +296,7 @@ for (let i = 0; i < 26; i++) {
   particles.appendChild(p);
 }
 
-function setText(v){
-  texts.forEach(t => t.textContent = v);
-}
+function setText(v){ texts.forEach(t => t.textContent = v); }
 
 async function updatePrice(){
   try{
