@@ -1,13 +1,13 @@
 <!--
 Project: BTC Core Display
-Version: 1.06
+Version: 1.07
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Moved toggle button 30px upward (top-center position refined)
-- Shifted price & time display 2px upward for better visual alignment
-- No functional or effect changes
+- Toggle button repositioned upward by distance equal to price-button gap
+- Glitch frequency increased significantly (1.5–3s random)
+- Added dynamic electronic motion: data stream + current packets
 -->
 
 <!DOCTYPE html>
@@ -19,185 +19,185 @@ Updates:
 
 <style>
 /* ================= RESET ================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
 
 html, body {
-  width: 100%;
-  height: 100%;
-  background: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  font-family: monospace;
+  width:100%;
+  height:100%;
+  background:black;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  font-family:monospace;
 }
 
 /* ================= MACHINE ================= */
 .machine {
-  position: relative;
-  width: min(92vw, 900px);
-  aspect-ratio: 1 / 1;
-  background: url("machine-bg.png") center / contain no-repeat;
+  position:relative;
+  width:min(92vw, 900px);
+  aspect-ratio:1/1;
+  background:url("machine-bg.png") center/contain no-repeat;
 }
 
-/* ================= MAIN SCREEN ================= */
+/* ================= SCREEN ================= */
 .screen {
-  position: absolute;
-  left: 50%;
-  top: 49%;
-  transform: translate(-50%, -44%);
-  width: 70%;
-  height: 22%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position:absolute;
+  left:50%;
+  top:49%;
+  transform:translate(-50%, -44%);
+  width:70%;
+  height:22%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-/* ================= ELECTRIC BACKGROUND ================= */
+/* ================= ELECTRIC BASE ================= */
 .electric {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+  position:absolute;
+  inset:0;
+  pointer-events:none;
   background:
     repeating-linear-gradient(
       90deg,
-      rgba(0,255,255,0.12) 0px,
-      rgba(0,255,255,0.12) 1px,
+      rgba(0,255,255,0.14) 0px,
+      rgba(0,255,255,0.14) 1px,
       transparent 1px,
-      transparent 12px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(0,200,255,0.10) 0px,
-      rgba(0,200,255,0.10) 1px,
-      transparent 1px,
-      transparent 18px
+      transparent 10px
     );
-  animation: electricMove 14s linear infinite;
-  opacity: 0.4;
+  animation: drift 10s linear infinite;
+  opacity:0.45;
 }
 
+/* data stream */
+.electric::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,255,255,0.25) 50%,
+      transparent 100%
+    );
+  animation: stream 2.2s linear infinite;
+  opacity:0.25;
+}
+
+/* current packets */
 .electric::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at center,
-    rgba(0,255,255,0.25),
-    transparent 55%
-  );
-  opacity: 0;
-  animation: pulse 5s ease-in-out infinite;
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 40%, rgba(0,255,255,0.6), transparent 35%),
+    radial-gradient(circle at 70% 60%, rgba(0,200,255,0.5), transparent 40%);
+  animation: packets 3.5s ease-in-out infinite alternate;
+  opacity:0.35;
 }
 
-@keyframes electricMove {
-  to {
-    background-position: 260px 130px, -130px 260px;
-  }
+@keyframes drift {
+  to { background-position:200px 0; }
 }
 
-@keyframes pulse {
-  0%, 90% { opacity: 0; }
-  92%     { opacity: 0.35; }
-  100%    { opacity: 0; }
+@keyframes stream {
+  from { transform:translateX(-100%); }
+  to   { transform:translateX(100%); }
+}
+
+@keyframes packets {
+  from { opacity:0.15; }
+  to   { opacity:0.45; }
 }
 
 /* ================= DISPLAY ================= */
 .display {
-  width: 100%;
-  height: 70%;
-  position: relative;
+  width:100%;
+  height:70%;
+  position:relative;
 }
 
 /* ================= SVG ================= */
-svg {
-  width: 100%;
-  height: 100%;
-}
+svg { width:100%; height:100%; }
 
 /* ================= WIREFRAME TEXT ================= */
 .wire {
-  fill: none;
-  stroke: #9ffcff;
-  stroke-width: 2.2;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 6px rgba(0,255,255,0.7));
+  fill:none;
+  stroke:#9ffcff;
+  stroke-width:2.2;
+  stroke-linejoin:round;
+  stroke-linecap:round;
+  filter:drop-shadow(0 0 6px rgba(0,255,255,0.7));
 }
 
 .wire.alt {
-  stroke: rgba(120,255,255,0.65);
-  stroke-width: 1.2;
-  stroke-dasharray: 6 4;
+  stroke:rgba(120,255,255,0.7);
+  stroke-width:1.2;
+  stroke-dasharray:5 3;
 }
 
 .wire.inner {
-  stroke: rgba(0,220,255,0.55);
-  stroke-width: 0.8;
-  stroke-dasharray: 2 6;
+  stroke:rgba(0,220,255,0.55);
+  stroke-width:0.8;
+  stroke-dasharray:2 5;
 }
 
 /* ===== TIME MODE ===== */
 .time-mode svg text {
-  font-size: 100px;
+  font-size:100px;
 }
 
 /* ================= GLITCH ================= */
 .glitch svg {
-  animation: glitchShift 0.14s linear infinite;
+  animation: glitch 0.12s steps(2) infinite;
 }
 
-@keyframes glitchShift {
-  0%   { transform: translate(0, 0); }
-  25%  { transform: translate(-4px, 1px); }
-  50%  { transform: translate(4px, -1px); }
-  75%  { transform: translate(-2px, 0); }
-  100% { transform: translate(0, 0); }
+.glitch .wire.alt { opacity:0.15; }
+.glitch .wire.inner { opacity:0.08; }
+
+@keyframes glitch {
+  0%   { transform:translate(0,0); }
+  20%  { transform:translate(-4px,1px); }
+  40%  { transform:translate(4px,-1px); }
+  60%  { transform:translate(-2px,0); }
+  100% { transform:translate(0,0); }
 }
 
 /* ================= TOGGLE BUTTON ================= */
 .toggle {
-  position: absolute;
+  position:absolute;
 
-  /* ⬆ 30px 위로 이동 */
-  top: calc(-26% - 30px);
-  left: 50%;
-  transform: translateX(-50%);
+  /* ⬆ 가격과 동일한 거리만큼 위 */
+  top:-50%;
+  left:50%;
+  transform:translate(-50%, -50%);
 
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width:36px;
+  height:36px;
+  border-radius:50%;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-  font-size: 1rem;
-  color: rgba(200,250,255,0.95);
+  font-size:1rem;
+  color:rgba(220,255,255,0.95);
 
-  border: 1px solid rgba(120,220,255,0.7);
-  background: radial-gradient(
-    circle at center,
-    rgba(0,255,255,0.2),
+  border:1px solid rgba(140,240,255,0.8);
+  background:radial-gradient(
+    circle,
+    rgba(0,255,255,0.25),
     rgba(0,120,255,0.05)
   );
 
-  cursor: pointer;
-  user-select: none;
+  cursor:pointer;
+  user-select:none;
 
   box-shadow:
-    0 0 10px rgba(0,255,255,0.7),
-    inset 0 0 6px rgba(0,255,255,0.45);
-}
-
-.toggle:hover {
-  box-shadow:
-    0 0 14px rgba(0,255,255,1),
-    inset 0 0 8px rgba(0,255,255,0.7);
+    0 0 12px rgba(0,255,255,0.8),
+    inset 0 0 8px rgba(0,255,255,0.6);
 }
 </style>
 </head>
@@ -210,7 +210,6 @@ svg {
 
     <div class="display" id="display">
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-        <!-- ⬆ 숫자 2px 위로: y 60% → 59% -->
         <text id="textMain"  x="50%" y="59%" text-anchor="middle"
               font-size="140" class="wire">----</text>
         <text id="textAlt"   x="50%" y="59%" text-anchor="middle"
@@ -225,9 +224,9 @@ svg {
 </div>
 
 <script>
-const main   = document.getElementById("textMain");
-const alt    = document.getElementById("textAlt");
-const inner  = document.getElementById("textInner");
+const main   = textMain;
+const alt    = textAlt;
+const inner  = textInner;
 const toggle = document.getElementById("toggle");
 const display = document.getElementById("display");
 
@@ -237,56 +236,48 @@ const TIMEZONE = "America/Denver";
 let mode = "price";
 let lastPrice = "----";
 
-function setText(val) {
-  main.textContent  = val;
-  alt.textContent   = val;
-  inner.textContent = val;
+function setText(v){
+  main.textContent = alt.textContent = inner.textContent = v;
 }
 
-async function updatePrice() {
+async function updatePrice(){
   try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    lastPrice = String(Math.round(Number(data.data.amount)));
-    if (mode === "price") setText(lastPrice);
+    const r = await fetch(API_URL);
+    const d = await r.json();
+    lastPrice = String(Math.round(Number(d.data.amount)));
+    if(mode==="price") setText(lastPrice);
   } catch {
     setText("ERROR");
   }
 }
 
-function updateTime() {
-  if (mode !== "time") return;
-
-  const time = new Intl.DateTimeFormat("en-US", {
-    timeZone: TIMEZONE,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
+function updateTime(){
+  if(mode!=="time") return;
+  const t = new Intl.DateTimeFormat("en-US", {
+    timeZone:TIMEZONE,
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit",
+    hour12:true
   }).format(new Date());
-
-  setText(time);
+  setText(t);
 }
 
-toggle.addEventListener("click", () => {
-  mode = mode === "price" ? "time" : "price";
+toggle.onclick = () => {
+  mode = mode==="price" ? "time" : "price";
+  display.classList.toggle("time-mode", mode==="time");
+  if(mode==="price") setText(lastPrice);
+};
 
-  if (mode === "price") {
-    display.classList.remove("time-mode");
-    setText(lastPrice);
-  } else {
-    display.classList.add("time-mode");
-  }
-});
-
-function triggerGlitch() {
+/* ===== GLITCH LOOP (MORE FREQUENT) ===== */
+function glitchLoop(){
   display.classList.add("glitch");
-  setTimeout(() => display.classList.remove("glitch"), 140);
-  setTimeout(triggerGlitch, 3000 + Math.random() * 3000);
+  setTimeout(()=>display.classList.remove("glitch"), 140);
+  setTimeout(glitchLoop, 1500 + Math.random()*1500);
 }
 
 updatePrice();
-triggerGlitch();
+glitchLoop();
 
 setInterval(updatePrice, 12000);
 setInterval(updateTime, 1000);
