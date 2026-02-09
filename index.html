@@ -1,29 +1,27 @@
 <!--
 Project: BTC Core Display
-Version: 1.21
+Version: 1.20-rollback
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Unified adjustable toggle positioning via CSS variable
-- Wireframe font preserved but rendered as multi-fragment puzzle-like construction
-- Added monitor scanline frequency noise
-- Added frequent glitch noise
-- Added floating electronic particle motion
-- Time mode auto-resizes to stay inside display
+- Rolled back to stable pre-fragment version
+- Kept simplified toggle position control (CSS variable)
+- All other visuals restored to previous stable state
 -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>BTC Core Wire Display</title>
+<title>BTC Core Display</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-/* ================= EASY ADJUST ================= */
+/* ================= EASY CONTROL ================= */
 :root {
-  --toggle-offset-y: 110px; /* 🔧 전환 버튼 위치 여기만 조절 */
+  /* 🔧 전환 버튼 위/아래 위치 여기만 조절 */
+  --toggle-offset-y: 110px;
 }
 
 /* ================= RESET ================= */
@@ -66,8 +64,15 @@ html, body {
   user-select:none;
 
   border:1px solid rgba(180,240,255,0.9);
-  background:radial-gradient(circle, rgba(0,255,255,0.35), rgba(0,120,255,0.05));
-  box-shadow:0 0 18px rgba(0,255,255,1), inset 0 0 12px rgba(0,255,255,0.7);
+  background:radial-gradient(
+    circle,
+    rgba(0,255,255,0.35),
+    rgba(0,120,255,0.05)
+  );
+
+  box-shadow:
+    0 0 18px rgba(0,255,255,1),
+    inset 0 0 12px rgba(0,255,255,0.7);
 }
 
 /* ================= SCREEN ================= */
@@ -101,7 +106,7 @@ html, body {
     transparent 3px,
     transparent 7px
   );
-  opacity:0.35;
+  opacity:0.3;
   animation:scanline 6s linear infinite;
 }
 
@@ -111,7 +116,7 @@ html, body {
   inset:0;
   pointer-events:none;
   background:rgba(255,255,255,0.03);
-  animation:flicker 0.14s infinite;
+  animation:flicker 0.15s infinite;
 }
 
 @keyframes scanline {
@@ -125,33 +130,15 @@ html, body {
   100% { opacity:0.02; }
 }
 
-/* ================= PARTICLES ================= */
-.particles {
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-}
-
-.particle {
-  position:absolute;
-  width:2px;
-  height:2px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.9);
-  box-shadow:0 0 6px rgba(255,255,255,0.9);
-  opacity:0.6;
-  animation:float 8s linear infinite;
-}
-
-@keyframes float {
-  from { transform:translate(0,0); }
-  to { transform:translate(var(--dx), var(--dy)); }
-}
-
 /* ================= SVG ================= */
-svg { width:100%; height:100%; position:relative; z-index:3; }
+svg {
+  width:100%;
+  height:100%;
+  position:relative;
+  z-index:2;
+}
 
-/* ================= WIREFRAME BASE ================= */
+/* ================= WIREFRAME TEXT ================= */
 .wire {
   fill:none;
   stroke:#9ffcff;
@@ -161,7 +148,6 @@ svg { width:100%; height:100%; position:relative; z-index:3; }
   filter:drop-shadow(0 0 6px rgba(0,255,255,0.7));
 }
 
-/* ================= LAYERS ================= */
 .wire.alt {
   stroke-width:1.2;
   stroke-dasharray:6 4;
@@ -172,30 +158,9 @@ svg { width:100%; height:100%; position:relative; z-index:3; }
   stroke-dasharray:2 6;
 }
 
-/* ================= FRAGMENTS ================= */
-.wire.frag1 {
-  stroke-width:1.4;
-  stroke-dasharray:12 8 4 10;
-  animation:frag1 4s ease-in-out infinite;
-}
-.wire.frag2 {
-  stroke-width:1.1;
-  stroke-dasharray:6 10 3 14;
-  animation:frag2 5s ease-in-out infinite;
-}
-.wire.frag3 {
-  stroke-width:0.8;
-  stroke-dasharray:2 6 8 12;
-  animation:frag3 6s ease-in-out infinite;
-}
-
-@keyframes frag1 { 50% { transform:translate(1px,-1px); } }
-@keyframes frag2 { 50% { transform:translate(-1px,1px); } }
-@keyframes frag3 { 50% { transform:translate(0.5px,1px); } }
-
 /* ================= TIME MODE ================= */
 .time-mode svg text {
-  font-size:95px;
+  font-size:130px;
 }
 
 /* ================= GLITCH ================= */
@@ -214,19 +179,19 @@ svg { width:100%; height:100%; position:relative; z-index:3; }
 
 <div class="machine">
 
+  <!-- 🔘 TIME / PRICE TOGGLE -->
   <div class="toggle" id="toggle">⟲</div>
 
+  <!-- DISPLAY -->
   <div class="screen">
-    <div class="particles" id="particles"></div>
-
     <div class="display" id="display">
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-        <text x="50%" y="57%" text-anchor="middle" class="wire"        id="t1">----</text>
-        <text x="50%" y="57%" text-anchor="middle" class="wire alt"    id="t2">----</text>
-        <text x="50%" y="57%" text-anchor="middle" class="wire inner"  id="t3">----</text>
-        <text x="50%" y="57%" text-anchor="middle" class="wire frag1">----</text>
-        <text x="50%" y="57%" text-anchor="middle" class="wire frag2">----</text>
-        <text x="50%" y="57%" text-anchor="middle" class="wire frag3">----</text>
+        <text x="50%" y="57%" text-anchor="middle"
+              font-size="175" class="wire" id="t1">----</text>
+        <text x="50%" y="57%" text-anchor="middle"
+              font-size="175" class="wire alt" id="t2">----</text>
+        <text x="50%" y="57%" text-anchor="middle"
+              font-size="175" class="wire inner" id="t3">----</text>
       </svg>
     </div>
   </div>
@@ -237,67 +202,56 @@ svg { width:100%; height:100%; position:relative; z-index:3; }
 const texts = document.querySelectorAll("svg text");
 const display = document.getElementById("display");
 const toggle = document.getElementById("toggle");
-const particles = document.getElementById("particles");
 
 const API = "https://api.coinbase.com/v2/prices/spot?currency=USD";
 const TZ = "America/Denver";
 
-let mode="price", last="----";
-
-/* particles */
-for(let i=0;i<30;i++){
-  const p=document.createElement("div");
-  p.className="particle";
-  p.style.left=Math.random()*100+"%";
-  p.style.top=Math.random()*100+"%";
-  p.style.setProperty("--dx",(Math.random()*60-30)+"px");
-  p.style.setProperty("--dy",(Math.random()*40-20)+"px");
-  particles.appendChild(p);
-}
+let mode = "price";
+let last = "----";
 
 function setText(v){
-  texts.forEach(t=>t.textContent=v);
+  texts.forEach(t => t.textContent = v);
 }
 
 async function updatePrice(){
   try{
-    const r=await fetch(API);
-    const d=await r.json();
-    last=String(Math.round(d.data.amount));
-    if(mode==="price") setText(last);
-  }catch{
+    const r = await fetch(API);
+    const d = await r.json();
+    last = String(Math.round(d.data.amount));
+    if(mode === "price") setText(last);
+  } catch {
     setText("ERROR");
   }
 }
 
 function updateTime(){
-  if(mode!=="time") return;
-  const t=new Intl.DateTimeFormat("en-US",{
-    timeZone:TZ,
-    hour:"2-digit",
-    minute:"2-digit",
-    second:"2-digit",
-    hour12:true
+  if(mode !== "time") return;
+  const t = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
   }).format(new Date());
   setText(t);
 }
 
-toggle.onclick=()=>{
-  mode=mode==="price"?"time":"price";
-  display.classList.toggle("time-mode",mode==="time");
-  if(mode==="price") setText(last);
+toggle.onclick = () => {
+  mode = mode === "price" ? "time" : "price";
+  display.classList.toggle("time-mode", mode === "time");
+  if(mode === "price") setText(last);
 };
 
 function glitchLoop(){
   display.classList.add("glitch");
-  setTimeout(()=>display.classList.remove("glitch"),120);
-  setTimeout(glitchLoop,800+Math.random()*800);
+  setTimeout(() => display.classList.remove("glitch"), 120);
+  setTimeout(glitchLoop, 1000 + Math.random() * 1000);
 }
 
 updatePrice();
 glitchLoop();
-setInterval(updatePrice,12000);
-setInterval(updateTime,1000);
+setInterval(updatePrice, 12000);
+setInterval(updateTime, 1000);
 </script>
 
 </body>
