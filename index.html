@@ -1,17 +1,13 @@
 <!--
 Project: BTC Core Display
-Version: 1.30-ultimate
+Version: 1.20-rollback
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Edge-line energy flow using machine-bg_edgeLines.png
-- Energy pulse triggered only on price change
-- Rotating ring light synced with price pulse
-- Scan-line glitch shortened & tuned
-- Visible floating particles (idle energy)
-- Reduced glitch frequency (≈50%)
-- All center alignment preserved (v1.20 baseline)
+- Reduced rotating ring light size to ~4x toggle button
+- Ring now acts as focused mechanical indicator (not full overlay)
+- All other visuals unchanged
 -->
 
 <!DOCTYPE html>
@@ -22,87 +18,51 @@ Updates:
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-:root { --toggle-offset-y:12px; }
+:root { --toggle-offset-y: 12px; }
 
-*{margin:0;padding:0;box-sizing:border-box;}
+* { margin:0; padding:0; box-sizing:border-box; }
 
-html,body{
+html, body {
   width:100%;
   height:100%;
   background:black;
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   overflow:hidden;
   font-family:monospace;
 }
 
 /* ================= MACHINE ================= */
-.machine{
+.machine {
   position:relative;
-  width:min(92vw,900px);
+  width:min(92vw, 900px);
   aspect-ratio:1/1;
   background:url("machine-bg.png") center/contain no-repeat;
 }
 
-/* ================= EDGE LINE ENERGY ================= */
-.line-energy{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-  opacity:0;
-
-  background:linear-gradient(
-    120deg,
-    transparent 0%,
-    rgba(0,255,255,0.9) 45%,
-    rgba(255,255,255,1) 50%,
-    rgba(0,255,255,0.9) 55%,
-    transparent 70%
-  );
-  background-size:200% 200%;
-
-  mask-image:url("machine-bg_edgeLines.png");
-  mask-repeat:no-repeat;
-  mask-position:center;
-  mask-size:contain;
-
-  filter:
-    drop-shadow(0 0 8px rgba(0,255,255,.9))
-    drop-shadow(0 0 18px rgba(0,255,255,.6));
-}
-
-.line-energy.active{
-  opacity:1;
-  animation:energyFlow .9s linear;
-}
-
-@keyframes energyFlow{
-  from{background-position:0% 0%;}
-  to{background-position:200% 200%;}
-}
-
-/* ================= ROTATING RING ================= */
-.ring-light{
+/* ================= ROTATING RING LIGHT ================= */
+.ring-light {
   position:absolute;
   left:50%;
   top:calc(27% + var(--toggle-offset-y));
-  width:200px;
-  height:200px;
-  transform:translate(-50%,-50%);
-  z-index:0;
+  width:180px;
+  height:180px;
+  transform:translate(-50%, -50%);
   pointer-events:none;
+  z-index:0;
 
-  background:conic-gradient(
-    transparent 0deg,
-    rgba(0,255,255,.15) 40deg,
-    rgba(255,255,255,.35) 60deg,
-    rgba(0,255,255,.15) 90deg,
-    transparent 140deg
-  );
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(0,255,255,0.15) 40deg,
+      rgba(255,255,255,0.35) 60deg,
+      rgba(0,255,255,0.15) 90deg,
+      transparent 140deg
+    );
 
-  mask-image:radial-gradient(circle,
+  mask-image:radial-gradient(circle at center,
     transparent 46%,
     black 50%,
     black 54%,
@@ -110,95 +70,85 @@ html,body{
   );
 
   animation:ringRotate 18s linear infinite;
-  filter:blur(.8px);
+  filter:blur(0.8px);
 }
 
-.ring-light.pulse{
-  animation:ringRotate 18s linear infinite,
-           ringPulse .6s ease-out;
-}
-
-@keyframes ringRotate{
-  from{transform:translate(-50%,-50%) rotate(0);}
-  to{transform:translate(-50%,-50%) rotate(360deg);}
-}
-
-@keyframes ringPulse{
-  0%{filter:blur(.8px) brightness(1);}
-  50%{filter:blur(1.6px) brightness(1.8);}
-  100%{filter:blur(.8px) brightness(1);}
+@keyframes ringRotate {
+  from { transform:translate(-50%, -50%) rotate(0deg); }
+  to   { transform:translate(-50%, -50%) rotate(360deg); }
 }
 
 /* ================= TOGGLE ================= */
-.toggle{
+.toggle {
   position:absolute;
   left:50%;
   top:calc(27% + var(--toggle-offset-y));
-  transform:translate(-50%,-50%);
+  transform:translate(-50%, -50%);
   width:38px;
   height:38px;
   border-radius:50%;
-  z-index:3;
-  cursor:pointer;
-
   display:flex;
   align-items:center;
   justify-content:center;
+  font-size:1.05rem;
   color:white;
+  cursor:pointer;
+  user-select:none;
+  z-index:3;
 
-  border:1px solid rgba(180,240,255,.9);
-  background:radial-gradient(circle,
-    rgba(0,255,255,.35),
-    rgba(0,120,255,.05));
-  box-shadow:0 0 18px rgba(0,255,255,1),
-             inset 0 0 12px rgba(0,255,255,.7);
+  border:1px solid rgba(180,240,255,0.9);
+  background:radial-gradient(circle, rgba(0,255,255,0.35), rgba(0,120,255,0.05));
+  box-shadow:0 0 18px rgba(0,255,255,1), inset 0 0 12px rgba(0,255,255,0.7);
 }
 
 /* ================= SCREEN ================= */
-.screen{
+.screen {
   position:absolute;
   left:50%;
   top:49%;
-  transform:translate(-50%,-44%);
+  transform:translate(-50%, -44%);
   width:70%;
   height:22%;
+  position:relative;
   z-index:2;
 }
 
 /* ================= PARTICLES ================= */
-.particles{
+.particles {
   position:absolute;
   inset:0;
-  z-index:1;
   pointer-events:none;
+  z-index:1;
 }
 
-.particle{
+.particle {
   position:absolute;
   width:4px;
   height:4px;
-  background:white;
   border-radius:50%;
-  opacity:.9;
-  box-shadow:0 0 12px rgba(255,255,255,1);
+  background:rgba(255,255,255,0.95);
+  box-shadow:
+    0 0 10px rgba(255,255,255,1),
+    0 0 20px rgba(0,255,255,0.8);
+  opacity:0.85;
   animation:floatParticle linear infinite;
 }
 
-@keyframes floatParticle{
-  from{transform:translate(0,0);opacity:.3;}
-  to{transform:translate(var(--dx),var(--dy));opacity:1;}
+@keyframes floatParticle {
+  from { transform:translate(0,0); opacity:0.4; }
+  to   { transform:translate(var(--dx), var(--dy)); opacity:1; }
 }
 
 /* ================= DISPLAY ================= */
-.display{
+.display {
   position:relative;
   width:100%;
   height:70%;
   overflow:hidden;
 }
 
-/* ================= SCAN LINE ================= */
-.scan{
+/* ================= PRICE SCAN LINE ================= */
+.scan {
   position:absolute;
   left:18.75%;
   top:50%;
@@ -209,70 +159,95 @@ html,body{
   background:linear-gradient(
     to right,
     transparent,
-    white,
-    cyan,
-    white,
+    rgba(255,255,255,0.9),
+    rgba(0,255,255,1),
+    rgba(255,255,255,0.9),
     transparent
   );
-  box-shadow:0 0 14px cyan;
+  box-shadow:0 0 14px rgba(0,255,255,1);
   z-index:3;
 }
 
-.scan.active{
-  animation:scanFlash .18s ease-out;
+.scan.active {
+  animation:scanFlash 0.18s ease-out;
 }
 
-@keyframes scanFlash{
-  0%{transform:translateY(-50%) scaleX(0);opacity:1;}
-  50%{transform:translateY(-50%) scaleX(1);opacity:1;}
-  100%{transform:translateY(-50%) scaleX(1);opacity:0;}
+@keyframes scanFlash {
+  0%   { transform:translateY(-50%) scaleX(0); opacity:1; }
+  50%  { transform:translateY(-50%) scaleX(1); opacity:1; }
+  100% { transform:translateY(-50%) scaleX(1); opacity:0; }
 }
 
 /* ================= NOISE ================= */
-.display::before{
+.display::before {
   content:"";
   position:absolute;
   inset:0;
+  pointer-events:none;
   background:repeating-linear-gradient(
     to bottom,
-    rgba(255,255,255,.05) 0px,
-    rgba(255,255,255,.05) 1px,
+    rgba(255,255,255,0.05) 0px,
+    rgba(255,255,255,0.05) 1px,
     transparent 3px,
-    transparent 7px);
-  opacity:.25;
+    transparent 7px
+  );
+  opacity:0.3;
   animation:scanline 6s linear infinite;
 }
 
-@keyframes scanline{
-  from{transform:translateY(-20%);}
-  to{transform:translateY(20%);}
+.display::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:rgba(255,255,255,0.03);
+  animation:flicker 0.15s infinite;
 }
 
-/* ================= TEXT ================= */
-svg{width:100%;height:100%;z-index:4;position:relative;}
+@keyframes scanline {
+  from { transform:translateY(-20%); }
+  to   { transform:translateY(20%); }
+}
 
-.wire{
+@keyframes flicker {
+  0% { opacity:0.02; }
+  50% { opacity:0.05; }
+  100% { opacity:0.02; }
+}
+
+/* ================= SVG ================= */
+svg {
+  width:100%;
+  height:100%;
+  position:relative;
+  z-index:4;
+}
+
+/* ================= WIREFRAME TEXT ================= */
+.wire {
   fill:none;
   stroke:#9ffcff;
   stroke-width:2.2;
-  filter:drop-shadow(0 0 6px cyan);
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  filter:drop-shadow(0 0 6px rgba(0,255,255,0.7));
 }
-.wire.alt{stroke-width:1.2;stroke-dasharray:6 4;}
-.wire.inner{stroke-width:.9;stroke-dasharray:2 6;}
+.wire.alt { stroke-width:1.2; stroke-dasharray:6 4; }
+.wire.inner { stroke-width:0.9; stroke-dasharray:2 6; }
 
-.time-mode svg text{
+.time-mode svg text {
   font-size:100px;
   transform:translateY(-24px);
 }
 
-/* ================= GLITCH (REDUCED) ================= */
-.glitch svg{
-  animation:glitch .12s steps(2) infinite;
+/* ================= GLITCH ================= */
+.glitch svg {
+  animation:glitch 0.12s steps(2) infinite;
 }
 
-@keyframes glitch{
-  25%{transform:translate(-2px,1px);}
-  50%{transform:translate(2px,-1px);}
+@keyframes glitch {
+  25% { transform:translate(-3px,1px); }
+  50% { transform:translate(3px,-1px); }
 }
 </style>
 </head>
@@ -280,16 +255,14 @@ svg{width:100%;height:100%;z-index:4;position:relative;}
 <body>
 
 <div class="machine">
-
-  <div class="line-energy" id="lineEnergy"></div>
-  <div class="ring-light" id="ringLight"></div>
+  <div class="ring-light"></div>
   <div class="toggle" id="toggle">⟲</div>
 
   <div class="screen">
     <div class="particles" id="particles"></div>
     <div class="display" id="display">
       <div class="scan" id="scan"></div>
-      <svg viewBox="0 0 1000 200">
+      <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
         <text x="50%" y="84%" text-anchor="middle" font-size="175" class="wire" id="t1">----</text>
         <text x="50%" y="84%" text-anchor="middle" font-size="175" class="wire alt" id="t2">----</text>
         <text x="50%" y="84%" text-anchor="middle" font-size="175" class="wire inner" id="t3">----</text>
@@ -299,79 +272,78 @@ svg{width:100%;height:100%;z-index:4;position:relative;}
 </div>
 
 <script>
-const texts=document.querySelectorAll("svg text");
-const display=document.getElementById("display");
-const toggle=document.getElementById("toggle");
-const scan=document.getElementById("scan");
-const particles=document.getElementById("particles");
-const lineEnergy=document.getElementById("lineEnergy");
-const ringLight=document.getElementById("ringLight");
+const texts = document.querySelectorAll("svg text");
+const display = document.getElementById("display");
+const toggle = document.getElementById("toggle");
+const particles = document.getElementById("particles");
+const scan = document.getElementById("scan");
 
-const API="https://api.coinbase.com/v2/prices/spot?currency=USD";
-const TZ="America/Denver";
-let mode="price", last="----";
+const API = "https://api.coinbase.com/v2/prices/spot?currency=USD";
+const TZ = "America/Denver";
+
+let mode = "price";
+let last = "----";
 
 /* particles */
-for(let i=0;i<26;i++){
-  const p=document.createElement("div");
-  p.className="particle";
-  p.style.left=Math.random()*100+"%";
-  p.style.top=Math.random()*100+"%";
-  p.style.animationDuration=8+Math.random()*10+"s";
-  p.style.setProperty("--dx",(Math.random()*120-60)+"px");
-  p.style.setProperty("--dy",(Math.random()*80-40)+"px");
+for (let i = 0; i < 26; i++) {
+  const p = document.createElement("div");
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "%";
+  p.style.top  = Math.random() * 100 + "%";
+  p.style.animationDuration = (8 + Math.random() * 10) + "s";
+  p.style.setProperty("--dx", (Math.random() * 100 - 50) + "px");
+  p.style.setProperty("--dy", (Math.random() * 70 - 35) + "px");
   particles.appendChild(p);
 }
 
-function setText(v){texts.forEach(t=>t.textContent=v);}
+function setText(v){ texts.forEach(t => t.textContent = v); }
 
 async function updatePrice(){
   try{
-    const r=await fetch(API);
-    const d=await r.json();
-    const next=String(Math.round(d.data.amount));
+    const r = await fetch(API);
+    const d = await r.json();
+    const next = String(Math.round(d.data.amount));
 
-    if(next!==last && mode==="price"){
+    if (next !== last && mode === "price") {
       setText("");
       scan.classList.add("active");
-      lineEnergy.classList.add("active");
-      ringLight.classList.add("pulse");
-
-      setTimeout(()=>{
+      setTimeout(() => {
         setText(next);
         scan.classList.remove("active");
-        lineEnergy.classList.remove("active");
-        ringLight.classList.remove("pulse");
-      },120);
+      }, 120);
     }
-    last=next;
-  }catch{setText("ERROR");}
+    last = next;
+  } catch {
+    setText("ERROR");
+  }
 }
 
 function updateTime(){
-  if(mode!=="time")return;
-  const t=new Intl.DateTimeFormat("en-US",{
-    timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true
+  if (mode !== "time") return;
+  const t = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour:"2-digit", minute:"2-digit", second:"2-digit",
+    hour12:true
   }).format(new Date());
   setText(t);
 }
 
-toggle.onclick=()=>{
-  mode=mode==="price"?"time":"price";
-  display.classList.toggle("time-mode",mode==="time");
-  if(mode==="price")setText(last);
+toggle.onclick = () => {
+  mode = mode === "price" ? "time" : "price";
+  display.classList.toggle("time-mode", mode === "time");
+  if (mode === "price") setText(last);
 };
 
-/* reduced glitch */
-(function glitchLoop(){
+function glitchLoop(){
   display.classList.add("glitch");
-  setTimeout(()=>display.classList.remove("glitch"),100);
-  setTimeout(glitchLoop,3000+Math.random()*3000);
-})();
+  setTimeout(() => display.classList.remove("glitch"), 120);
+  setTimeout(glitchLoop, 2000 + Math.random() * 2000);
+}
 
 updatePrice();
-setInterval(updatePrice,12000);
-setInterval(updateTime,1000);
+glitchLoop();
+setInterval(updatePrice, 12000);
+setInterval(updateTime, 1000);
 </script>
 
 </body>
