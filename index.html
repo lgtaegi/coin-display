@@ -3,11 +3,11 @@ coin-display
 Version: 0.1
 Author: lgtaegi
 Notes:
-- Base from previous BTC display
-- Alerts removed
-- Top animation removed
-- Display options preserved
-- Centered responsive layout
+- Clean new start
+- BTC price display
+- Small current time shown below
+- Toggle button: Price ↔ Time
+- Timezone: Salt Lake City, UT (America/Denver)
 -->
 
 <!DOCTYPE html>
@@ -38,59 +38,115 @@ Notes:
       justify-content: center;
     }
 
-    .display {
+    .container {
       text-align: center;
     }
 
-    .price {
+    .main {
       font-size: clamp(3rem, 10vw, 8rem);
       font-weight: 700;
       letter-spacing: 0.05em;
     }
 
-    .currency {
-      margin-top: 8px;
-      font-size: 1.2rem;
-      opacity: 0.8;
+    .sub-time {
+      margin-top: 10px;
+      font-size: 1rem;
+      opacity: 0.7;
     }
 
-    .meta {
-      margin-top: 12px;
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+      padding: 6px 14px;
       font-size: 0.9rem;
-      opacity: 0.6;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #222;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="display">
-    <div class="price" id="price">--</div>
-    <div class="currency">BTC / USD</div>
-    <div class="meta" id="updated">Updated: --</div>
+  <div class="container">
+    <div class="main" id="mainDisplay">--</div>
+    <div class="sub-time" id="subTime">--</div>
+
+    <div class="controls">
+      <button id="toggleBtn">Show Time</button>
+    </div>
   </div>
 
   <script>
-    const priceEl = document.getElementById("price");
-    const updatedEl = document.getElementById("updated");
+    const mainDisplay = document.getElementById("mainDisplay");
+    const subTime = document.getElementById("subTime");
+    const toggleBtn = document.getElementById("toggleBtn");
 
     const API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
+    const TIMEZONE = "America/Denver";
+
+    let mode = "price"; // price | time
+    let lastPrice = "--";
+
+    function getLocalTime() {
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: TIMEZONE,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      }).format(new Date());
+    }
 
     async function fetchPrice() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
-        const price = Math.round(Number(data.data.amount));
-
-        priceEl.textContent = `$${price.toLocaleString()}`;
-        updatedEl.textContent = "Updated: " + new Date().toLocaleTimeString();
-      } catch (e) {
-        priceEl.textContent = "ERROR";
+        lastPrice = `$${Math.round(Number(data.data.amount)).toLocaleString()}`;
+        if (mode === "price") {
+          mainDisplay.textContent = lastPrice;
+        }
+      } catch {
+        if (mode === "price") {
+          mainDisplay.textContent = "ERROR";
+        }
       }
     }
 
+    function updateTime() {
+      const time = getLocalTime();
+      subTime.textContent = `Salt Lake City · ${time}`;
+
+      if (mode === "time") {
+        mainDisplay.textContent = time;
+      }
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      if (mode === "price") {
+        mode = "time";
+        mainDisplay.textContent = getLocalTime();
+        toggleBtn.textContent = "Show Price";
+      } else {
+        mode = "price";
+        mainDisplay.textContent = lastPrice;
+        toggleBtn.textContent = "Show Time";
+      }
+    });
+
+    // initial load
     fetchPrice();
-    setInterval(fetchPrice, 10000);
+    updateTime();
+
+    setInterval(fetchPrice, 10000); // price update
+    setInterval(updateTime, 1000);  // time update
   </script>
 
 </body>
