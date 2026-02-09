@@ -5,8 +5,9 @@ Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Added price-change electric scan transition
-- Added large slow-moving background core elements
+- Shortened price-change scan line (display-only, 50% width)
+- Enhanced floating background particles (bigger & brighter)
+- Removed rotating machine core light effect
 - Center alignment and timing unchanged
 -->
 
@@ -75,22 +76,6 @@ html, body {
   position:relative;
 }
 
-/* ================= BACKGROUND CORE ================= */
-.core {
-  position:absolute;
-  inset:-30%;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(0,255,255,0.12), transparent 40%),
-    radial-gradient(circle at 70% 60%, rgba(120,255,255,0.08), transparent 45%);
-  animation:coreMove 22s linear infinite;
-  z-index:0;
-}
-
-@keyframes coreMove {
-  from { transform:translate(0,0) rotate(0deg); }
-  to   { transform:translate(-4%,3%) rotate(360deg); }
-}
-
 /* ================= PARTICLES ================= */
 .particles {
   position:absolute;
@@ -101,18 +86,20 @@ html, body {
 
 .particle {
   position:absolute;
-  width:2px;
-  height:2px;
+  width:4px;
+  height:4px;
   border-radius:50%;
-  background:rgba(255,255,255,0.85);
-  box-shadow:0 0 6px rgba(255,255,255,0.9);
-  opacity:0.6;
+  background:rgba(255,255,255,0.95);
+  box-shadow:
+    0 0 10px rgba(255,255,255,1),
+    0 0 20px rgba(0,255,255,0.8);
+  opacity:0.85;
   animation:floatParticle linear infinite;
 }
 
 @keyframes floatParticle {
-  from { transform:translate(0,0); opacity:0.3; }
-  to   { transform:translate(var(--dx), var(--dy)); opacity:0.9; }
+  from { transform:translate(0,0); opacity:0.4; }
+  to   { transform:translate(var(--dx), var(--dy)); opacity:1; }
 }
 
 /* ================= DISPLAY ================= */
@@ -123,13 +110,15 @@ html, body {
   overflow:hidden;
 }
 
-/* ================= ELECTRIC SCAN ================= */
+/* ================= PRICE SCAN LINE ================= */
 .scan {
   position:absolute;
-  left:0;
+  left:25%;
   top:50%;
-  width:100%;
+  width:50%;
   height:3px;
+  transform:translateY(-50%) scaleX(0);
+  opacity:0;
   background:linear-gradient(
     to right,
     transparent,
@@ -138,9 +127,7 @@ html, body {
     rgba(255,255,255,0.9),
     transparent
   );
-  box-shadow:0 0 18px rgba(0,255,255,1);
-  transform:translateY(-50%) scaleX(0);
-  opacity:0;
+  box-shadow:0 0 14px rgba(0,255,255,1);
   z-index:3;
 }
 
@@ -199,7 +186,7 @@ svg {
   z-index:4;
 }
 
-/* ================= TEXT ================= */
+/* ================= WIREFRAME TEXT ================= */
 .wire {
   fill:none;
   stroke:#9ffcff;
@@ -234,7 +221,6 @@ svg {
   <div class="toggle" id="toggle">⟲</div>
 
   <div class="screen">
-    <div class="core"></div>
     <div class="particles" id="particles"></div>
 
     <div class="display" id="display">
@@ -262,14 +248,14 @@ let mode = "price";
 let last = "----";
 
 /* particles */
-for (let i = 0; i < 28; i++) {
+for (let i = 0; i < 26; i++) {
   const p = document.createElement("div");
   p.className = "particle";
   p.style.left = Math.random() * 100 + "%";
   p.style.top  = Math.random() * 100 + "%";
-  p.style.animationDuration = (6 + Math.random() * 10) + "s";
-  p.style.setProperty("--dx", (Math.random() * 80 - 40) + "px");
-  p.style.setProperty("--dy", (Math.random() * 50 - 25) + "px");
+  p.style.animationDuration = (8 + Math.random() * 10) + "s";
+  p.style.setProperty("--dx", (Math.random() * 100 - 50) + "px");
+  p.style.setProperty("--dy", (Math.random() * 70 - 35) + "px");
   particles.appendChild(p);
 }
 
@@ -291,7 +277,6 @@ async function updatePrice(){
         scan.classList.remove("active");
       }, 120);
     }
-
     last = next;
   } catch {
     setText("ERROR");
