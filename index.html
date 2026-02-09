@@ -291,7 +291,7 @@ toggle.onclick = () => {
 function glitchLoop(){
   display.classList.add("glitch");
   setTimeout(() => display.classList.remove("glitch"), 120);
-  setTimeout(glitchLoop,2500 + Math.random() * 2500);
+  setTimeout(glitchLoop,2000 + Math.random() * 2000);
 }
 
 updatePrice();
