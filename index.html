@@ -1,14 +1,12 @@
 <!--
 Project: BTC Core Display
-Version: 1.50-background-motion
+Version: 1.20-rollback
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Added TRUE background motion layer behind numbers
-- Added analog static, wave distortion, tear glitch, brightness pulse
-- Display background now visibly moves like a real CRT monitor
-- Effects tuned to be clearly visible even with SVG text overlay
+- Restored floating particle motion inside display
+- Center alignment, toggle position, time offset unchanged
 -->
 
 <!DOCTYPE html>
@@ -21,6 +19,7 @@ Updates:
 <style>
 /* ================= EASY CONTROL ================= */
 :root {
+  /* 🔧 전환 버튼 위/아래 위치 여기만 조절 */
   --toggle-offset-y: 12px;
 }
 
@@ -64,7 +63,12 @@ html, body {
   user-select:none;
 
   border:1px solid rgba(180,240,255,0.9);
-  background:radial-gradient(circle, rgba(0,255,255,0.35), rgba(0,120,255,0.05));
+  background:radial-gradient(
+    circle,
+    rgba(0,255,255,0.35),
+    rgba(0,120,255,0.05)
+  );
+
   box-shadow:
     0 0 18px rgba(0,255,255,1),
     inset 0 0 12px rgba(0,255,255,0.7);
@@ -80,6 +84,36 @@ html, body {
   height:22%;
 }
 
+/* ================= PARTICLES ================= */
+.particles {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:1; /* 숫자 뒤 */
+}
+
+.particle {
+  position:absolute;
+  width:2px;
+  height:2px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.85);
+  box-shadow:0 0 6px rgba(255,255,255,0.9);
+  opacity:0.6;
+  animation:floatParticle linear infinite;
+}
+
+@keyframes floatParticle {
+  from {
+    transform:translate(0,0);
+    opacity:0.3;
+  }
+  to {
+    transform:translate(var(--dx), var(--dy));
+    opacity:0.9;
+  }
+}
+
 /* ================= DISPLAY ================= */
 .display {
   position:relative;
@@ -88,78 +122,7 @@ html, body {
   overflow:hidden;
 }
 
-/* ============================================================
-   TRUE BACKGROUND MOTION LAYER (숫자 뒤에서 실제로 움직이는 레이어)
-   ============================================================ */
-.bg-motion {
-  position:absolute;
-  inset:0;
-  z-index:0;
-  background:black;
-  overflow:hidden;
-}
-
-/* 1) 강한 아날로그 노이즈 */
-.bg-noise {
-  position:absolute;
-  inset:0;
-  background:url("https://i.imgur.com/8QfQ7Qv.gif") center/cover;
-  opacity:0.22;
-  mix-blend-mode:screen;
-  animation:noiseShift 0.25s steps(2) infinite;
-}
-@keyframes noiseShift {
-  0% { transform:translate(0,0); }
-  100% { transform:translate(-3px,2px); }
-}
-
-/* 2) 전파 간섭 웨이브 */
-.bg-wave {
-  position:absolute;
-  inset:0;
-  background:rgba(255,255,255,0.03);
-  mix-blend-mode:overlay;
-  animation:waveMove 4s ease-in-out infinite;
-}
-@keyframes waveMove {
-  0% { transform:skewX(0deg); }
-  50% { transform:skewX(3deg); }
-  100% { transform:skewX(0deg); }
-}
-
-/* 3) 찢김(tear glitch) */
-.bg-tear {
-  position:absolute;
-  inset:0;
-  background:linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255,255,255,0.08) 50%,
-    transparent 100%
-  );
-  mix-blend-mode:screen;
-  animation:tearMove 1.8s infinite;
-}
-@keyframes tearMove {
-  0% { transform:translateY(-20%); }
-  100% { transform:translateY(120%); }
-}
-
-/* 4) 밝기 펄스 */
-.bg-bright {
-  position:absolute;
-  inset:0;
-  background:rgba(255,255,255,0.05);
-  mix-blend-mode:overlay;
-  animation:brightPulse 3s ease-in-out infinite;
-}
-@keyframes brightPulse {
-  0% { opacity:0.0; }
-  50% { opacity:0.15; }
-  100% { opacity:0.0; }
-}
-
-/* ================= SCANLINES ================= */
+/* ================= MONITOR NOISE ================= */
 .display::before {
   content:"";
   position:absolute;
@@ -175,9 +138,25 @@ html, body {
   opacity:0.3;
   animation:scanline 6s linear infinite;
 }
+
+.display::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:rgba(255,255,255,0.03);
+  animation:flicker 0.15s infinite;
+}
+
 @keyframes scanline {
   from { transform:translateY(-20%); }
   to   { transform:translateY(20%); }
+}
+
+@keyframes flicker {
+  0% { opacity:0.02; }
+  50% { opacity:0.05; }
+  100% { opacity:0.02; }
 }
 
 /* ================= SVG ================= */
@@ -185,7 +164,7 @@ svg {
   width:100%;
   height:100%;
   position:relative;
-  z-index:5;
+  z-index:2;
 }
 
 /* ================= WIREFRAME TEXT ================= */
@@ -213,6 +192,16 @@ svg {
   font-size:100px;
   transform: translateY(-24px);
 }
+
+/* ================= GLITCH ================= */
+.glitch svg {
+  animation:glitch 0.12s steps(2) infinite;
+}
+
+@keyframes glitch {
+  25% { transform:translate(-3px,1px); }
+  50% { transform:translate(3px,-1px); }
+}
 </style>
 </head>
 
@@ -225,17 +214,10 @@ svg {
 
   <!-- DISPLAY -->
   <div class="screen">
+    <!-- ✨ floating particles -->
+    <div class="particles" id="particles"></div>
+
     <div class="display" id="display">
-
-      <!-- ⭐ 숫자 뒤에서 실제로 움직이는 배경 레이어 -->
-      <div class="bg-motion">
-        <div class="bg-noise"></div>
-        <div class="bg-wave"></div>
-        <div class="bg-tear"></div>
-        <div class="bg-bright"></div>
-      </div>
-
-      <!-- 숫자 -->
       <svg viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
         <text x="50%" y="84%" text-anchor="middle"
               font-size="175" class="wire" id="t1">----</text>
@@ -244,7 +226,6 @@ svg {
         <text x="50%" y="84%" text-anchor="middle"
               font-size="175" class="wire inner" id="t3">----</text>
       </svg>
-
     </div>
   </div>
 
@@ -254,12 +235,25 @@ svg {
 const texts = document.querySelectorAll("svg text");
 const display = document.getElementById("display");
 const toggle = document.getElementById("toggle");
+const particles = document.getElementById("particles");
 
 const API = "https://api.coinbase.com/v2/prices/spot?currency=USD";
 const TZ = "America/Denver";
 
 let mode = "price";
 let last = "----";
+
+/* ===== particles init ===== */
+for (let i = 0; i < 28; i++) {
+  const p = document.createElement("div");
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "%";
+  p.style.top  = Math.random() * 100 + "%";
+  p.style.animationDuration = (6 + Math.random() * 10) + "s";
+  p.style.setProperty("--dx", (Math.random() * 80 - 40) + "px");
+  p.style.setProperty("--dy", (Math.random() * 50 - 25) + "px");
+  particles.appendChild(p);
+}
 
 function setText(v){
   texts.forEach(t => t.textContent = v);
@@ -270,14 +264,14 @@ async function updatePrice(){
     const r = await fetch(API);
     const d = await r.json();
     last = String(Math.round(d.data.amount));
-    if(mode === "price") setText(last);
+    if (mode === "price") setText(last);
   } catch {
     setText("ERROR");
   }
 }
 
 function updateTime(){
-  if(mode !== "time") return;
+  if (mode !== "time") return;
   const t = new Intl.DateTimeFormat("en-US", {
     timeZone: TZ,
     hour: "2-digit",
@@ -291,10 +285,17 @@ function updateTime(){
 toggle.onclick = () => {
   mode = mode === "price" ? "time" : "price";
   display.classList.toggle("time-mode", mode === "time");
-  if(mode === "price") setText(last);
+  if (mode === "price") setText(last);
 };
 
+function glitchLoop(){
+  display.classList.add("glitch");
+  setTimeout(() => display.classList.remove("glitch"), 120);
+  setTimeout(glitchLoop, 1000 + Math.random() * 1000);
+}
+
 updatePrice();
+glitchLoop();
 setInterval(updatePrice, 12000);
 setInterval(updateTime, 1000);
 </script>
