@@ -1,13 +1,14 @@
 <!--
 Project: BTC Core Display
-Version: 1.04
+Version: 1.05
 Date: 2026-02-09
 Author: lgtaegi
 
 Updates:
-- Reduced time-mode numeric size further to ensure full containment
-- Improved visual balance between price and time modes
-- No structural or behavioral changes
+- Removed comma separators from price display
+- Toggle button repositioned to top-center of main display
+- Increased glitch frequency and variation
+- Added electromagnetic pulse flash inside display
 -->
 
 <!DOCTYPE html>
@@ -53,7 +54,6 @@ html, body {
   width: 70%;
   height: 22%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
@@ -66,45 +66,46 @@ html, body {
   background:
     repeating-linear-gradient(
       90deg,
-      rgba(0,255,255,0.10) 0px,
-      rgba(0,255,255,0.10) 1px,
+      rgba(0,255,255,0.12) 0px,
+      rgba(0,255,255,0.12) 1px,
       transparent 1px,
-      transparent 14px
+      transparent 12px
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(0,200,255,0.08) 0px,
-      rgba(0,200,255,0.08) 1px,
+      rgba(0,200,255,0.10) 0px,
+      rgba(0,200,255,0.10) 1px,
       transparent 1px,
-      transparent 20px
+      transparent 18px
     );
-  animation: electricMove 18s linear infinite;
-  opacity: 0.35;
+  animation: electricMove 14s linear infinite;
+  opacity: 0.4;
 }
 
+/* electromagnetic pulse */
 .electric::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(0,255,255,0.12) 50%,
-    transparent 100%
+  background: radial-gradient(
+    circle at center,
+    rgba(0,255,255,0.25),
+    transparent 55%
   );
-  animation: scanLine 6s ease-in-out infinite;
-  opacity: 0.35;
+  opacity: 0;
+  animation: pulse 5s ease-in-out infinite;
 }
 
 @keyframes electricMove {
   to {
-    background-position: 300px 150px, -150px 300px;
+    background-position: 260px 130px, -130px 260px;
   }
 }
 
-@keyframes scanLine {
-  from { transform: translateY(-100%); }
-  to   { transform: translateY(100%); }
+@keyframes pulse {
+  0%, 90% { opacity: 0; }
+  92%     { opacity: 0.35; }
+  100%    { opacity: 0; }
 }
 
 /* ================= DISPLAY ================= */
@@ -131,64 +132,80 @@ svg {
 }
 
 .wire.alt {
-  stroke: rgba(120,255,255,0.6);
+  stroke: rgba(120,255,255,0.65);
   stroke-width: 1.2;
   stroke-dasharray: 6 4;
 }
 
 .wire.inner {
-  stroke: rgba(0,200,255,0.5);
+  stroke: rgba(0,220,255,0.55);
   stroke-width: 0.8;
   stroke-dasharray: 2 6;
 }
 
-/* ===== TIME MODE (MORE REDUCED) ===== */
+/* ===== TIME MODE ===== */
 .time-mode svg text {
-  font-size: 100px;   /* ⬅ 더 줄인 핵심 포인트 */
+  font-size: 100px;
 }
 
 /* ================= GLITCH ================= */
 .glitch svg {
-  animation: glitchShift 0.12s linear infinite;
+  animation: glitchShift 0.14s linear infinite;
+}
+
+.glitch .wire.alt {
+  opacity: 0.25;
+}
+
+.glitch .wire.inner {
+  opacity: 0.15;
 }
 
 @keyframes glitchShift {
-  0%   { transform: translateX(0); }
-  30%  { transform: translateX(-3px); }
-  60%  { transform: translateX(3px); }
-  100% { transform: translateX(0); }
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-4px, 1px); }
+  50%  { transform: translate(4px, -1px); }
+  75%  { transform: translate(-2px, 0); }
+  100% { transform: translate(0, 0); }
 }
 
 /* ================= TOGGLE BUTTON ================= */
 .toggle {
   position: absolute;
-  right: 8%;
-  bottom: -6%;
-  width: 34px;
-  height: 34px;
+  top: -26%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.95rem;
-  color: rgba(180,245,255,0.9);
-  border: 1px solid rgba(120,220,255,0.6);
+
+  font-size: 1rem;
+  color: rgba(200,250,255,0.95);
+
+  border: 1px solid rgba(120,220,255,0.7);
   background: radial-gradient(
     circle at center,
-    rgba(0,255,255,0.15),
+    rgba(0,255,255,0.2),
     rgba(0,120,255,0.05)
   );
+
   cursor: pointer;
   user-select: none;
+
   box-shadow:
-    0 0 6px rgba(0,255,255,0.5),
-    inset 0 0 5px rgba(0,255,255,0.35);
+    0 0 10px rgba(0,255,255,0.7),
+    inset 0 0 6px rgba(0,255,255,0.45);
 }
 
 .toggle:hover {
   box-shadow:
-    0 0 10px rgba(0,255,255,0.8),
-    inset 0 0 7px rgba(0,255,255,0.55);
+    0 0 14px rgba(0,255,255,1),
+    inset 0 0 8px rgba(0,255,255,0.7);
 }
 </style>
 </head>
@@ -233,17 +250,19 @@ function setText(val) {
   inner.textContent = val;
 }
 
+/* ===== PRICE UPDATE (NO COMMA) ===== */
 async function updatePrice() {
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
-    lastPrice = Math.round(Number(data.data.amount)).toLocaleString();
+    lastPrice = String(Math.round(Number(data.data.amount)));
     if (mode === "price") setText(lastPrice);
   } catch {
     setText("ERROR");
   }
 }
 
+/* ===== TIME UPDATE ===== */
 function updateTime() {
   if (mode !== "time") return;
 
@@ -258,6 +277,7 @@ function updateTime() {
   setText(time);
 }
 
+/* ===== TOGGLE ===== */
 toggle.addEventListener("click", () => {
   mode = mode === "price" ? "time" : "price";
 
@@ -269,11 +289,11 @@ toggle.addEventListener("click", () => {
   }
 });
 
-/* ===== GLITCH RANDOM ===== */
+/* ===== GLITCH RANDOMIZER (MORE FREQUENT) ===== */
 function triggerGlitch() {
   display.classList.add("glitch");
-  setTimeout(() => display.classList.remove("glitch"), 120);
-  setTimeout(triggerGlitch, 6000 + Math.random() * 8000);
+  setTimeout(() => display.classList.remove("glitch"), 140);
+  setTimeout(triggerGlitch, 3000 + Math.random() * 3000);
 }
 
 updatePrice();
